@@ -4,7 +4,7 @@ using UnityEngine;
 [Serializable]
 public abstract class CoinSerializableObject : object
 {
-    private static string sDefaultSaveDirectory = Application.persistentDataPath;
+    private static string sDefaultSaveDirectory = string.Empty;// Application.persistentDataPath;
     private const string kDefaultFileName = "SavedData.dat";
 
     protected virtual string InternalSaveDirectory

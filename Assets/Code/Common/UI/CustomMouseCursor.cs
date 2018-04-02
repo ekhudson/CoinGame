@@ -6,7 +6,7 @@ public class CustomMouseCursor : Singleton<CustomMouseCursor>
     private Transform mTransform;
     private Camera mMainCamera;
     private bool mShowCursor = true;
-    private UISprite mSprite;
+    //private UISprite mSprite;
 
     private const float kMouseForwardOffest = 0.01f;
 
@@ -27,19 +27,19 @@ public class CustomMouseCursor : Singleton<CustomMouseCursor>
     {
         mTransform = transform;
         mMainCamera = Camera.main;
-        mSprite = GetComponent<UISprite>();
+        //mSprite = GetComponent<UISprite>();
     }
 
     private void OnGUI()
     {
-        if (mShowCursor && !mSprite.enabled)
-        {
-            mSprite.enabled = true;
-        }
-        else if (!mShowCursor && mSprite.enabled)
-        {
-            mSprite.enabled = false;
-        }
+        //if (mShowCursor && !mSprite.enabled)
+        //{
+        //    mSprite.enabled = true;
+        //}
+        //else if (!mShowCursor && mSprite.enabled)
+        //{
+        //    mSprite.enabled = false;
+        //}
 
         Event e = Event.current;
 

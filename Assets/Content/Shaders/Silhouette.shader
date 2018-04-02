@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 Shader "Silhouette" {
     Properties {
         _Color ("Main Color", Color) = (.5,.5,.5,1)
@@ -35,7 +37,7 @@ float4 _OutlineColor;
 v2f vert(appdata v)
 {
     v2f o;
-    o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+    o.pos = UnityObjectToClipPos(v.vertex);
     float3 norm = mul ((float3x3)UNITY_MATRIX_MV, v.normal);
     norm.x *= UNITY_MATRIX_P[0][0];
     norm.y *= UNITY_MATRIX_P[1][1];
@@ -71,7 +73,7 @@ struct v2f {
 v2f vert (appdata_base v)
 {
     v2f o;
-    o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+    o.pos = UnityObjectToClipPos (v.vertex);
     o.normal = v.normal;
     o.uv = TRANSFORM_UV(0);
     o.viewDir = ObjSpaceViewDir( v.vertex );   

@@ -25,7 +25,6 @@ public class PlayerScript : MonoBehaviour
     public bool FollowCoins = true;
     public float RotationIncrementDegrees = 1f;
     public Texture2D WhiteTexture = null;
-    public DepthOfField DOFScript;
 
     private bool mNeedReload = false;
     private Ray mRay;
@@ -108,11 +107,6 @@ public class PlayerScript : MonoBehaviour
             WhiteTexture = new Texture2D(1, 1);
             WhiteTexture.SetPixel(1, 1, Color.white);
             WhiteTexture.Apply(); 
-        }
-
-        if (DOFScript.focalTransform == null && mPreviewCoin != null)
-        {
-            DOFScript.focalTransform = mPreviewCoin.transform;
         }
 
         DrawInventory();
@@ -391,7 +385,7 @@ public class PlayerScript : MonoBehaviour
         mPreviewCoin.transform.position = mCurrentReloadPosition;
         mPreviewRenderer.enabled = true;
         mCoinRadius = PlayerCoinPrefab.GetComponent<Renderer>().bounds.extents.x;
-        DOFScript.focalTransform = mPreviewCoin.transform;
+
     }
 
     private void OnDrawGizmos()
@@ -450,8 +444,6 @@ public class PlayerScript : MonoBehaviour
         playerCoin.GetComponent<Rigidbody>().AddForceAtPosition(force, playerCoin.transform.position + centerOffset - (mCamera.transform.forward * 0.25f), ForceMode.VelocityChange);
 
         playerCoin.name = "Launched Coin";
-
-        DOFScript.focalTransform = playerCoin.transform;
 
         PlayerCoinScript playerCoinScript = playerCoin.GetComponent<PlayerCoinScript>();
 
