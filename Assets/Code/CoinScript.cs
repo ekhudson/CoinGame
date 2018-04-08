@@ -21,6 +21,7 @@ public class CoinScript : BaseObject
 
     private CoinStates mCoinState = CoinStates.IDLE;
     private Rigidbody mRigidbody;
+    private float mCurrentFacingDot = 0f;
 
     private void Start()
     {
@@ -34,9 +35,11 @@ public class CoinScript : BaseObject
             mRigidbody.velocity = Vector3.ClampMagnitude(mRigidbody.velocity, MaxVelocity);
         }
 
+        mCurrentFacingDot = Vector3.Dot(BaseTransform.up, Vector3.up);
+
         if (mRigidbody.IsSleeping() && !IsPlayerCoin)
         {
-            if (Vector3.Dot(BaseTransform.up, Vector3.up) < kFacingUpThreshold)
+            if (mCurrentFacingDot < kFacingUpThreshold)
             {
                 RemoveCoin();
             }
@@ -56,7 +59,5 @@ public class CoinScript : BaseObject
 
         BaseGameObject.SetActive(false);
         this.enabled = false;
-
-
     }
 }

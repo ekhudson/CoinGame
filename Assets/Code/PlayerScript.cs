@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityStandardAssets.ImageEffects;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -26,6 +25,9 @@ public class PlayerScript : MonoBehaviour
     public float RotationIncrementDegrees = 1f;
     public Texture2D WhiteTexture = null;
 
+    [SerializeField]
+    private float m_MoveDecayTime = 1f;
+
     private bool mNeedReload = false;
     private Ray mRay;
     private RaycastHit mHit;
@@ -40,6 +42,7 @@ public class PlayerScript : MonoBehaviour
     private float mCoinRadius = 10f;
     private Vector3 mCustomRotation = Vector3.zero;
     private bool mGamePaused = false;
+    private Vector3 mMoveDirection = Vector3.zero;
 
     private float mCurrentReloadTime = 0f;
     private Vector3 mCurrentReloadPosition = Vector3.zero;
@@ -171,44 +174,40 @@ public class PlayerScript : MonoBehaviour
 
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
             {
-                //mCustomRotation.y += -RotationIncrementDegrees;
-
-                Vector3 right = transform.right;
-
-                transform.position += -right * 1f;
-                mOrbitScript.Target.transform.position += -right * 1f;
+                mMoveDirection  += -transform.right;
             }
 
             if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
             {
-                //mCustomRotation.y += RotationIncrementDegrees;
-
-                Vector3 right = transform.right;
-                
-                transform.position += right * 1f;
-                mOrbitScript.Target.transform.position += right * 1f;
+                mMoveDirection += transform.right;
             }
 
             if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
             {
-                //mCustomRotation.x += RotationIncrementDegrees;
-
-                Vector3 forward = Vector3.Cross(transform.right, Vector3.up);
-                
-                transform.position += forward * 1f;
-                mOrbitScript.Target.transform.position += forward * 1f;
+                mMoveDirection += transform.forward;
             }
 
             if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
             {
-                //mCustomRotation.x += -RotationIncrementDegrees;
-
-                Vector3 forward = Vector3.Cross(transform.right, Vector3.up);
-                
-                transform.position += -forward * 1f;
-                mOrbitScript.Target.transform.position += -forward * 1f;
+                mMoveDirection += -transform.forward;
             }
 
+            if (Input.GetKey(KeyCode.Space))
+            {
+                mMoveDirection += Vector3.up;
+            }
+
+            if (Input.GetKey(KeyCode.C))
+            {
+                mMoveDirection += -Vector3.up;
+            }
+
+            transform.position += mMoveDirection * (PanSpeed * Time.unscaledDeltaTime);
+            mOrbitScript.Target.transform.position += mMoveDirection * (PanSpeed * Time.unscaledDeltaTime);
+
+            Vector3 velocity = Vector3.zero;
+
+            mMoveDirection = Vector3.SmoothDamp(mMoveDirection, Vector3.zero, ref velocity, m_MoveDecayTime);
 
             Vector3 mousePos = Input.mousePosition;
 
@@ -357,14 +356,7 @@ public class PlayerScript : MonoBehaviour
         GUI.DrawTexture(barRect, WhiteTexture, ScaleMode.StretchToFill);
 
         GUI.color = Color.white;
-    }
-
-    private void Pan()
-    {
-        CoinCenterOffset.x = Mathf.Clamp(CoinCenterOffset.x + Input.GetAxis("Mouse X") * PanSpeed, -mCoinRadius, mCoinRadius);
-        CoinCenterOffset.y = Mathf.Clamp(CoinCenterOffset.y + Input.GetAxis("Mouse Y") * PanSpeed, -mCoinRadius, mCoinRadius);
-        CoinCenterOffset = Vector3.ClampMagnitude(CoinCenterOffset, mCoinRadius);
-    }
+    }    
 
     private void DrawInventory()
     {

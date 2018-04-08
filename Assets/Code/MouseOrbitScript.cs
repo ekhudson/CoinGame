@@ -83,8 +83,8 @@ public class MouseOrbitScript : BaseObject
 
             if ( (mCurrentTarget && Input.GetMouseButton(1)))            
             {
-                x += Input.GetAxis("Mouse X") * xSpeed * Time.deltaTime;
-                y += Input.GetAxis("Mouse Y") * ySpeed * Time.deltaTime;
+                x += Input.GetAxis("Mouse X") * xSpeed * Time.unscaledDeltaTime;
+                y += Input.GetAxis("Mouse Y") * ySpeed * Time.unscaledDeltaTime;
                 
                 y = ClampAngle(y, yMinLimit, yMaxLimit);
                 
@@ -98,8 +98,8 @@ public class MouseOrbitScript : BaseObject
             {
                 mCustomFollowOrbit = true;
 
-                x += Input.GetAxis("Mouse X") * xSpeed * Time.deltaTime;
-                y += Input.GetAxis("Mouse Y") * ySpeed * Time.deltaTime;
+                x += Input.GetAxis("Mouse X") * xSpeed * Time.unscaledDeltaTime;
+                y += Input.GetAxis("Mouse Y") * ySpeed * Time.unscaledDeltaTime;
                 
                 y = ClampAngle(y, yMinLimit, yMaxLimit);
                 

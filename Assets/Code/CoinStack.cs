@@ -69,11 +69,12 @@ public class CoinStack : MonoBehaviour
         Vector3 position = mPosition;
 
         RaycastHit hit;
-        Ray testRay = new Ray(mPosition + (Vector3.up * 100), Vector3.down);
+        Ray testRay = new Ray(mPosition + (Vector3.up * 0.5f), Vector3.down);
 
         int layerMask = 1 << LayerMask.NameToLayer("CoinLayer");
 
-        if (Physics.Raycast(testRay, out hit, 1000f, layerMask))
+        //if (Physics.Raycast(testRay, out hit, 1000f, layerMask))
+        if (Physics.Raycast(testRay, out hit, 100f))
         {
             position = hit.point +  new Vector3(0f, mCoinHeight * 0.5f, 0f);
         }
