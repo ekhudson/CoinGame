@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "com.unity.probuilder": "3.0.1"
+    "com.unity.probuilder": "3.0.1",
+    "com.unity.textmeshpro": "1.2.2"
   }
 }
