@@ -18,7 +18,7 @@ public class GameManager : Singleton<GameManager>
     private GameStates m_CurrentGameState = GameStates.PreInit;
 
     [SerializeField]
-    private Scene m_SceneToLoad;
+    private string m_SceneToLoad;
 
     private float mCurrentLoadingProgress = 0f;
 
@@ -28,7 +28,7 @@ public class GameManager : Singleton<GameManager>
         {
             case GameStates.PreInit:
 
-                StartCoroutine(LoadScene(m_SceneToLoad.name));
+                StartCoroutine(LoadScene(m_SceneToLoad));
                 m_CurrentGameState = GameStates.Initializing;
 
             break;
@@ -92,17 +92,25 @@ public class GameManager : Singleton<GameManager>
         GameStates previousState = m_CurrentGameState;
         m_CurrentGameState = newState;
 
-        EventManager.Instance.Post(new GameStateChangeEvent(this, previousState, newState));
+        EventManager.Instance.Post(new GameStateChangeEvent(this, newState, previousState));
     }
 
     IEnumerator LoadScene(string scene)
     {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(scene);
+        if (string.IsNullOrEmpty(scene))
+        {
+            Debug.Log("No scene specified");
+            yield break;
+        }
+
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
 
         while (!asyncLoad.isDone)
         {
             mCurrentLoadingProgress = asyncLoad.progress;
             yield return null;
         }
+
+        SetNewState(GameStates.FrontEnd); //Not good, we could be loading any scene here.
     }
 }

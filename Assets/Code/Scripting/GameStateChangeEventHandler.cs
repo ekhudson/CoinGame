@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
 
-public class GameStateChangeEventHandler : SimpleScript.ActionBase
+public class GameStateChangeEventHandler : MonoBehaviour
 {
     [SerializeField]
     private GameManager.GameStates m_GameState;
@@ -23,7 +23,10 @@ public class GameStateChangeEventHandler : SimpleScript.ActionBase
     {
         if (gameStateChangedEvent.NewState == m_GameState)
         {
-
+            if (m_OnStateChanged != null)
+            {
+                m_OnStateChanged.Invoke();
+            }
         }
     }
 }
