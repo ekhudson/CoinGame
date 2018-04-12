@@ -30,9 +30,46 @@ public class SessionTurn
             return;
         }
 
+        switch (newState)
+        {
+            case TurnStates.NotStarted:
+
+            break;
+
+            case TurnStates.TurnStarting:
+
+            break;
+
+            case TurnStates.Aiming:
+
+            break;
+
+            case TurnStates.Launched:
+
+            break;
+
+            case TurnStates.TurnEnding:
+
+            break;
+
+            case TurnStates.TurnEnded:
+
+            break;
+        }
+
         TurnStates previousState = mCurrentState;
         mCurrentState = newState;
 
         EventManager.Instance.Post(new TurnStateChangedEvent(null, mCurrentState, previousState));
+    }
+
+    private void DoTurnStart()
+    {
+        SetState(TurnStates.Aiming);
+    }
+
+    private void DoTurnEnd()
+    {
+        SetState(TurnStates.TurnEnded);
     }
 }
