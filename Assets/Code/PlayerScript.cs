@@ -377,6 +377,7 @@ public class PlayerScript : MonoBehaviour
         mPreviewCoin.transform.position = mCurrentReloadPosition;
         mPreviewRenderer.enabled = true;
         mCoinRadius = PlayerCoinPrefab.GetComponent<Renderer>().bounds.extents.x;
+        SessionManager.Instance.EndCurrentTurn();
 
     }
 

@@ -45,28 +45,35 @@ public class Scoreboard : MonoBehaviour
 
         for (int i = 0; i < numPlayers; i++)
         {
-            DrawPlayerScorecard(i);
+            DrawPlayerScorecard(i, SessionManager.Instance.CurrentPlayerIndex == i);
         }
     }
 
-    private void DrawPlayerScorecard(int playerIndex)
+    private void DrawPlayerScorecard(int playerIndex, bool isCurrentPlayer)
     {
         PlayerData playerData = PlayerManager.Instance.GetPlayer(playerIndex);
 
         string tempText = string.Format("{0}: {1}", playerData.PlayerName, playerData.GetCurrentScore().ToString());
+
+        if (isCurrentPlayer)
+        {
+            GUI.color = Color.cyan;
+        }
 
         GUILayout.BeginHorizontal();
 
         GUILayout.Label(tempText, GUI.skin.button, GUILayout.Height(64f));
 
         GUILayout.EndHorizontal();
+
+        GUI.color = Color.white;
     }
 
     public void CoinEventHandler(object sender, CoinEvent evt)
     {
         if (evt.CoinEventType == CoinEvent.CoinEventTypes.LANDED_FACE_UP)
         {
-            PlayerManager.Instance.GetPlayer(0).AddToScore(evt.Coin.Value);
+            PlayerManager.Instance.GetPlayer(SessionManager.Instance.CurrentPlayerIndex).AddToScore(evt.Coin.Value);
         }
     }
 }

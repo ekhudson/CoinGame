@@ -1,18 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class PlayerSessionData
-{
-    public Player Player;
-    public List<CoinScript> CoinsCollected;
-
-    public PlayerSessionData(Player player)
-    {
-        Player = player;
-    }
-}
-
 public class SessionManager : Singleton<SessionManager>
 {
     public enum SessionStates
@@ -23,18 +11,16 @@ public class SessionManager : Singleton<SessionManager>
         OutOfSession,
     }
 
-    private List<PlayerSessionData> mPlayerList;
-
     private int mCurrentPlayerIndex = 0;
     
     private SessionStates mCurrentState = SessionStates.OutOfSession;
     private SessionTurn mCurrentTurn = new SessionTurn();
 
-    public List<PlayerSessionData> PlayerList
+    public int CurrentPlayerIndex
     {
         get
         {
-            return mPlayerList;
+            return mCurrentPlayerIndex;
         }
     }
 
@@ -64,11 +50,6 @@ public class SessionManager : Singleton<SessionManager>
                 SetState(SessionStates.Ending);
             }
         }
-    }
-
-    public void AddPlayer(Player player)
-    {
-        mPlayerList.Add(new PlayerSessionData(player));
     }
 
     private void SetState(SessionStates newState)
@@ -109,7 +90,7 @@ public class SessionManager : Singleton<SessionManager>
 
     private void StartSession()
     {
-        mCurrentPlayerIndex = Random.Range(0, mPlayerList.Count);
+        mCurrentPlayerIndex = Random.Range(0, PlayerManager.Instance.GetPlayerCount());
         StartCurrentTurn();
         SetState(SessionStates.InProgress);
     }
@@ -126,22 +107,23 @@ public class SessionManager : Singleton<SessionManager>
         SetState(SessionStates.Ending);
     }
 
-    private void StartCurrentTurn()
+    public void StartCurrentTurn()
     {
         mCurrentTurn.SetState(SessionTurn.TurnStates.TurnStarting);
     }
 
-    private void EndCurrentTurn()
+    public void EndCurrentTurn()
     {
         mCurrentTurn.SetState(SessionTurn.TurnStates.TurnEnding);
         IterateCurrentPlayer();
+        StartCurrentTurn();
     }
 
     private void IterateCurrentPlayer()
     {
         mCurrentPlayerIndex++;
 
-        if (mCurrentPlayerIndex >= mPlayerList.Count)
+        if (mCurrentPlayerIndex >= PlayerManager.Instance.GetPlayerCount())
         {
             mCurrentPlayerIndex = 0;
         }

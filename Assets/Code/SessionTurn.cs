@@ -38,6 +38,8 @@ public class SessionTurn
 
             case TurnStates.TurnStarting:
 
+                DoTurnStart();
+
             break;
 
             case TurnStates.Aiming:
@@ -49,6 +51,8 @@ public class SessionTurn
             break;
 
             case TurnStates.TurnEnding:
+
+                DoTurnEnd();
 
             break;
 

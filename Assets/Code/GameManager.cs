@@ -55,6 +55,11 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    public void TrySetState(GameStates state)
+    {
+        SetNewState(state);
+    }
+
     private void SetNewState(GameStates newState)
     {
         if (newState == m_CurrentGameState)

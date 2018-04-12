@@ -6,7 +6,8 @@ public class PlayerData : CoinSerializableObject
 {
     public string PlayerName = "New Player";
     private int mCurrentScore = 0;
-    private bool mInvertYAxis = false;
+    [SerializeField]
+    private bool m_InvertYAxis = false;
 
     protected override string InternalDefaultFileName
     {

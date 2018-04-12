@@ -4,10 +4,12 @@ using System.Collections.Generic;
 
 public class PlayerManager : Singleton<PlayerManager> 
 {
-	private List<PlayerData> mPlayerList = new List<PlayerData>()
+    private List<PlayerData> mPlayerList = new List<PlayerData>();
+
+    public void AddPlayer(PlayerData player)
     {
-        new PlayerData("ekhudson", 0),
-    };
+        mPlayerList.Add(player);
+    }
 
     public int GetPlayerCount()
     {
