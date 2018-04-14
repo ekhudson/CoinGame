@@ -25,9 +25,6 @@ public class PlayerScript : MonoBehaviour
     public float RotationIncrementDegrees = 1f;
     public Texture2D WhiteTexture = null;
 
-    [SerializeField]
-    private float m_MoveDecayTime = 1f;
-
     private bool mNeedReload = false;
     private Ray mRay;
     private RaycastHit mHit;
@@ -42,7 +39,6 @@ public class PlayerScript : MonoBehaviour
     private float mCoinRadius = 10f;
     private Vector3 mCustomRotation = Vector3.zero;
     private bool mGamePaused = false;
-    private Vector3 mMoveDirection = Vector3.zero;
 
     private float mCurrentReloadTime = 0f;
     private Vector3 mCurrentReloadPosition = Vector3.zero;
@@ -202,12 +198,7 @@ public class PlayerScript : MonoBehaviour
             //    mMoveDirection += -Vector3.up;
             //}
 
-            transform.position += mMoveDirection * (PanSpeed * Time.unscaledDeltaTime);
-            mOrbitScript.Target.transform.position += mMoveDirection * (PanSpeed * Time.unscaledDeltaTime);
-
-            Vector3 velocity = Vector3.zero;
-
-            mMoveDirection = Vector3.SmoothDamp(mMoveDirection, Vector3.zero, ref velocity, m_MoveDecayTime);
+            //mOrbitScript.Target.transform.position += mMoveDirection * (PanSpeed * Time.unscaledDeltaTime);
 
             Vector3 mousePos = Input.mousePosition;
 

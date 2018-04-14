@@ -3,7 +3,7 @@ using System.Collections;
 
 using XInputDotNetPure;
 
-public class UserInputKeyEvent : EventBase
+public class UserInputEvent : EventBase
 {
     public enum TYPE
     {
@@ -26,12 +26,23 @@ public class UserInputKeyEvent : EventBase
 	{
 		public readonly float AmountX = 0.0f;
 		public readonly float AmountY = 0.0f;
+        public readonly Vector2 Value = Vector2.zero;
 
 		public JoystickInfoClass(float amountX, float amountY)
 		{		
 			AmountX = amountX;
 			AmountY = amountY;
-		}
+            Value.x = AmountX;
+            Value.y = AmountY;
+
+        }
+
+        public JoystickInfoClass(Vector2 value)
+        {
+            Value = value;
+            AmountX = Value.x;
+            AmountY = Value.y;
+        }
 	}
 
 	public class GamePadInfoClass
@@ -44,20 +55,20 @@ public class UserInputKeyEvent : EventBase
 		}
 	}
 
-	public UserInputKeyEvent(UserInputKeyEvent.TYPE inputType, KeyBinding bind, Vector3 location, object sender) : base(location, sender)
+	public UserInputEvent(UserInputEvent.TYPE inputType, KeyBinding bind, Vector3 location, object sender) : base(location, sender)
 	{
 		Type = inputType;
 		KeyBind = bind;
 	}
 
-    public UserInputKeyEvent(UserInputKeyEvent.TYPE inputType, KeyBinding bind, JoystickInfoClass joystickInfo, Vector3 location, object sender) : base(location, sender)
+    public UserInputEvent(UserInputEvent.TYPE inputType, KeyBinding bind, JoystickInfoClass joystickInfo, Vector3 location, object sender) : base(location, sender)
     {
         Type = inputType;
         KeyBind = bind;
 		JoystickInfo = joystickInfo;
     }
 
-	public UserInputKeyEvent(UserInputKeyEvent.TYPE inputType, KeyBinding bind, JoystickInfoClass joystickInfo, int playerIndex, Vector3 location, object sender) : base(location, sender)
+	public UserInputEvent(UserInputEvent.TYPE inputType, KeyBinding bind, JoystickInfoClass joystickInfo, int playerIndex, Vector3 location, object sender) : base(location, sender)
 	{
 		Type = inputType;
 		KeyBind = bind;
@@ -65,7 +76,7 @@ public class UserInputKeyEvent : EventBase
 		PlayerIndexInt = playerIndex;
 	}
 
-	public UserInputKeyEvent(UserInputKeyEvent.TYPE inputType, KeyBinding bind, int playerIndex, Vector3 location, object sender) : base(location, sender)
+	public UserInputEvent(UserInputEvent.TYPE inputType, KeyBinding bind, int playerIndex, Vector3 location, object sender) : base(location, sender)
 	{
 		Type = inputType;
 		KeyBind = bind;

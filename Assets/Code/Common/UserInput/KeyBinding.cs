@@ -13,10 +13,8 @@ public class KeyBinding
     public bool Enabled = true;
     public MouseButtons MouseButton = MouseButtons.None;
     public MouseButtons AltMouseButton = MouseButtons.None;
-	public GamePadButtonValues ControllerButtons;
-	public GamePadJoystickValues ControllerJoysticks;
-
-	//public List<KeyBinding> Conflicts = new List<KeyBinding>(); //TODO: Figure out the most efficient way to update keybind conflicts
+    public GamePadButtonValues ControllerButtons = GamePadButtonValues.None;
+    public GamePadJoystickValues ControllerJoysticks = GamePadJoystickValues.None;
 
     private bool mIsDown = false;
 
@@ -59,6 +57,18 @@ public class KeyBinding
         AltMouseButton = MouseButtons.None;
     }
 
+    public KeyBinding(string bindingName, GamePadButtonValues controllerButtons)
+    {
+        BindingName = bindingName;
+        ControllerButtons = controllerButtons;
+    }
+
+    public KeyBinding(string bindingName, GamePadJoystickValues joysticks)
+    {
+        BindingName = bindingName;
+        ControllerJoysticks = joysticks;
+    }
+
     public bool IsDown
     {
         get
@@ -84,6 +94,7 @@ public class KeyBinding
 
 	public enum GamePadButtonValues
 	{
+        None = 0,
 		DPadUp = 1,
 		DPadDown = 2,
 		DPadLeft = 4,
@@ -102,6 +113,7 @@ public class KeyBinding
 
 	public enum GamePadJoystickValues
 	{
+        None = 0,
 		LeftTrigger = 1,
 		RightTrigger = 2,
 		LeftStick = 4,

@@ -1,7 +1,7 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using XInputDotNetPure; // Required in C#
+using Sirenix.OdinInspector;
 
 public class UserInput : Singleton<UserInput>
 {
@@ -14,6 +14,7 @@ public class UserInput : Singleton<UserInput>
     [SerializeField]
     private float m_JoystickDeadzoneY = 0.2f;
     [SerializeField]
+    [InlineEditor]
     private KeyBindingsAsset m_BindingsAsset;
 
     private List<KeyBinding> mKeyBindings = new List<KeyBinding>();
@@ -83,28 +84,6 @@ public class UserInput : Singleton<UserInput>
         mKeyBindings = new List<KeyBinding>(m_BindingsAsset.KeyBindings);
     }
 
-    ////Find all the KeyBindings on UserInput
-    //public void GatherKeyBindings(System.Type t)
-    //{
-    //    KeyBindings.Clear();
-
-    //    System.Type myType = t;
-
-    //    System.Reflection.FieldInfo[] myField = myType.GetFields();
-
-    //    for(int i = 0; i < myField.Length; i++)
-    //    {
-    //        if(myField[i].FieldType == typeof(KeyBinding))
-    //        {
-    //            KeyBinding binding = (KeyBinding)myField[i].GetValue(this);
-    //            if (!KeyBindings.Contains(binding))
-    //            {
-    //                KeyBindings.Add(binding);
-    //            }
-    //        }
-    //    }
-    //}
-
     //Store all the KeyBindings for easy referencing
     private void StoreKeyBindings()
     {
@@ -158,7 +137,7 @@ public class UserInput : Singleton<UserInput>
                 }
             }
 
-			if (binding.ControllerButtons != null)
+			if (binding.ControllerButtons != KeyBinding.GamePadButtonValues.None)
 			{
 				if (!mGamepPadButtonBindings.ContainsKey(binding.ControllerButtons))
 				{
@@ -170,7 +149,7 @@ public class UserInput : Singleton<UserInput>
 				}
 			}
 
-			if (binding.ControllerJoysticks != null)
+			if (binding.ControllerJoysticks != KeyBinding.GamePadJoystickValues.None)
 			{
 				if (!mGamepadJoystickBindings.ContainsKey(binding.ControllerJoysticks))
 				{
@@ -188,7 +167,7 @@ public class UserInput : Singleton<UserInput>
     {
         foreach(KeyBinding binding in mKeysDown)
         {
-            EventManager.Instance.Post(new UserInputKeyEvent(UserInputKeyEvent.TYPE.KEYHELD, binding, 0, Vector3.zero, this));
+            EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.KEYHELD, binding, 0, Vector3.zero, this));
         }
     }
 
@@ -200,12 +179,12 @@ public class UserInput : Singleton<UserInput>
         {
             if(e.type == EventType.KeyDown)
             {
-                ProcessKeycode(e.keyCode, UserInputKeyEvent.TYPE.KEYDOWN);
+                ProcessKeycode(e.keyCode, UserInputEvent.TYPE.KEYDOWN);
             }
 
             if(e.type == EventType.KeyUp)
             {
-                ProcessKeycode(e.keyCode, UserInputKeyEvent.TYPE.KEYUP);
+                ProcessKeycode(e.keyCode, UserInputEvent.TYPE.KEYUP);
             }
         }
         else if (e.isMouse && e.type == EventType.MouseDown || e.type == EventType.MouseUp)
@@ -217,7 +196,7 @@ public class UserInput : Singleton<UserInput>
 		GatherJoystickInput();
     }
 
-    private void ProcessKeycode(KeyCode code, UserInputKeyEvent.TYPE inputType)
+    private void ProcessKeycode(KeyCode code, UserInputEvent.TYPE inputType)
     {
         if (!mKeyBindingsDictionary.ContainsKey(code))
         {
@@ -228,14 +207,14 @@ public class UserInput : Singleton<UserInput>
         {
             if (binding.Enabled)
             {
-                if (inputType == UserInputKeyEvent.TYPE.KEYDOWN && mKeysDown.Contains(binding))
+                if (inputType == UserInputEvent.TYPE.KEYDOWN && mKeysDown.Contains(binding))
 				{
-					inputType = UserInputKeyEvent.TYPE.KEYHELD;
+					inputType = UserInputEvent.TYPE.KEYHELD;
 				}
 
-				EventManager.Instance.Post(new UserInputKeyEvent(inputType, binding, 0, Vector3.zero, this)); //TODO: Figure out how to get proper player index
+				EventManager.Instance.Post(new UserInputEvent(inputType, binding, 0, Vector3.zero, this)); //TODO: Figure out how to get proper player index
 
-                if (inputType == UserInputKeyEvent.TYPE.KEYDOWN)
+                if (inputType == UserInputEvent.TYPE.KEYDOWN)
                 {
                     binding.IsDown = true;
 
@@ -244,7 +223,7 @@ public class UserInput : Singleton<UserInput>
                         mKeysDown.Add(binding);
                     }
                 }
-                else if (inputType == UserInputKeyEvent.TYPE.KEYUP)
+                else if (inputType == UserInputEvent.TYPE.KEYUP)
                 {
                     binding.IsDown = false;
 
@@ -260,7 +239,7 @@ public class UserInput : Singleton<UserInput>
     private void ProcessMouseInput(int button, EventType evtType)
     {
         KeyBinding.MouseButtons mouseButton = (KeyBinding.MouseButtons)(button + 1);
-        UserInputKeyEvent.TYPE inputType = evtType == EventType.MouseDown ? UserInputKeyEvent.TYPE.KEYDOWN : UserInputKeyEvent.TYPE.KEYUP;
+        UserInputEvent.TYPE inputType = evtType == EventType.MouseDown ? UserInputEvent.TYPE.KEYDOWN : UserInputEvent.TYPE.KEYUP;
 
         if (!mMouseBindingsDictionary.ContainsKey(mouseButton))
         {
@@ -271,9 +250,9 @@ public class UserInput : Singleton<UserInput>
         {
             if (binding.Enabled)
             {
-                EventManager.Instance.Post(new UserInputKeyEvent(inputType, binding, 0, Vector3.zero, this));
+                EventManager.Instance.Post(new UserInputEvent(inputType, binding, 0, Vector3.zero, this));
 
-                if (inputType == UserInputKeyEvent.TYPE.KEYDOWN)
+                if (inputType == UserInputEvent.TYPE.KEYDOWN)
                 {
                     binding.IsDown = true;
 
@@ -282,7 +261,7 @@ public class UserInput : Singleton<UserInput>
                         mKeysDown.Add(binding);
                     }
                 }
-                else if (inputType == UserInputKeyEvent.TYPE.KEYUP)
+                else if (inputType == UserInputEvent.TYPE.KEYUP)
                 {
                     binding.IsDown = false;
 
@@ -357,16 +336,16 @@ public class UserInput : Singleton<UserInput>
 				if (!mKeyDownDict[playerIndexInt].Contains(binding) && buttonState == ButtonState.Pressed)
 				{
 					mKeyDownDict[playerIndexInt].Add(binding);
-					EventManager.Instance.Post(new UserInputKeyEvent(UserInputKeyEvent.TYPE.GAMEPAD_BUTTON_DOWN, binding, playerIndexInt, Vector3.zero, this));
+					EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_DOWN, binding, playerIndexInt, Vector3.zero, this));
 				}
 				else if (mKeyDownDict[playerIndexInt].Contains(binding) && buttonState == ButtonState.Released)
 				{
 					mKeyDownDict[playerIndexInt].Remove(binding);
-					EventManager.Instance.Post(new UserInputKeyEvent(UserInputKeyEvent.TYPE.GAMEPAD_BUTTON_UP, binding, playerIndexInt, Vector3.zero, this));
+					EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_UP, binding, playerIndexInt, Vector3.zero, this));
 				}
 				else if (mKeyDownDict[playerIndexInt].Contains(binding) && buttonState == ButtonState.Pressed)
 				{
-					EventManager.Instance.Post(new UserInputKeyEvent(UserInputKeyEvent.TYPE.GAMEPAD_BUTTON_HELD, binding, playerIndexInt, Vector3.zero, this));
+					EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_HELD, binding, playerIndexInt, Vector3.zero, this));
 				}
 			}
 		}
@@ -436,12 +415,10 @@ public class UserInput : Singleton<UserInput>
 		{
 			if (binding.Enabled)
 			{
-				EventManager.Instance.Post(new UserInputKeyEvent(UserInputKeyEvent.TYPE.GAMEPAD_JOYSTICK, binding, new UserInputKeyEvent.JoystickInfoClass(valueX, valueY), (int)playerIndex, Vector3.zero, this));
+				EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_JOYSTICK, binding, new UserInputEvent.JoystickInfoClass(valueX, valueY), (int)playerIndex, Vector3.zero, this));
 			}
 		}
 	}
-
-
 
     /// <summary>
     /// Enables or disables a binding.
