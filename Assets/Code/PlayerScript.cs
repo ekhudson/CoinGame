@@ -172,35 +172,35 @@ public class PlayerScript : MonoBehaviour
                 //Pan();
             }
 
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            {
-                mMoveDirection  += -transform.right;
-            }
+            //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+            //{
+            //    mMoveDirection  += -transform.right;
+            //}
 
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            {
-                mMoveDirection += transform.right;
-            }
+            //if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+            //{
+            //    mMoveDirection += transform.right;
+            //}
 
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-            {
-                mMoveDirection += transform.forward;
-            }
+            //if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+            //{
+            //    mMoveDirection += transform.forward;
+            //}
 
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-            {
-                mMoveDirection += -transform.forward;
-            }
+            //if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            //{
+            //    mMoveDirection += -transform.forward;
+            //}
 
-            if (Input.GetKey(KeyCode.Space))
-            {
-                mMoveDirection += Vector3.up;
-            }
+            //if (Input.GetKey(KeyCode.Space))
+            //{
+            //    mMoveDirection += Vector3.up;
+            //}
 
-            if (Input.GetKey(KeyCode.C))
-            {
-                mMoveDirection += -Vector3.up;
-            }
+            //if (Input.GetKey(KeyCode.C))
+            //{
+            //    mMoveDirection += -Vector3.up;
+            //}
 
             transform.position += mMoveDirection * (PanSpeed * Time.unscaledDeltaTime);
             mOrbitScript.Target.transform.position += mMoveDirection * (PanSpeed * Time.unscaledDeltaTime);

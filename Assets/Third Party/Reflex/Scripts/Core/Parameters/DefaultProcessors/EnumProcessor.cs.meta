@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 26f0b68370ae7e948abf32af3e4bee8a
+labels:
+- Command
+- CommandLine
+- Console
+- Debug
+- DebugConsole
+- Dev
+- Development
+- Input
+- Reflex
+timeCreated: 1503085117
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
