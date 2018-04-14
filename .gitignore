@@ -12,3 +12,8 @@
 Library/*
 
 
+Assets/Third Party/SimpleScript/SimpleScript.dll.meta
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
+.vs/CoinGame/v15/Server/sqlite3/storage.ide
+.vs/CoinGame/v15/Server/sqlite3/db.lock
