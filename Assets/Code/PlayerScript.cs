@@ -240,28 +240,7 @@ public class PlayerScript : MonoBehaviour
     {
         if (evt.KeyBind.BindingName == "Throw")
         {
-            if (evt.JoystickInfo != null)
-            {
-                if (evt.JoystickInfo.Value.magnitude > 0)
-                {
-                    mThrowKeyDown = true;
-                }
-                else
-                {
-                    mThrowKeyDown = false;
-                }
-            }
-            else
-            {
-                if (evt.KeyBind.IsDown)
-                {
-                    mThrowKeyDown = true;
-                }
-                else
-                {
-                    mThrowKeyDown = false;
-                }
-            }
+            mThrowKeyDown = evt.KeyBind.IsDown;
         }
     }
 

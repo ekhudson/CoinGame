@@ -3,24 +3,59 @@ using XInputDotNetPure;
 
 public class MoveCamera : MonoBehaviour
 {
+    public enum CameraStates
+    {
+        IDLE,
+        FOLLOWING_SLAM,
+    }
+
+    [Header("Movement")]
     [SerializeField]
     private Transform m_CameraTransform;
     [SerializeField]
-    private float m_MoveSpeedHorizontal = 1f;
+    private float m_MaxMoveSpeedHorizontal = 1f;
     [SerializeField]
-    private float m_MoveSpeedVertical = 1f;
+    private float m_MaxMoveSpeedVertical = 1f;
     [SerializeField]
-    private float m_AccelHorizontal = 1f;
+    private float m_MoveAccelHorizontal = 1f;
     [SerializeField]
-    private float m_AccelVertical = 1f;
+    private float m_MoveAccelVertical = 1f;
     [SerializeField]
     private float m_MoveDecay = 0.9f;
 
-    private bool m_MoveEnabled = true;
+    [Header("Rotation")]
+    [SerializeField]
+    private float m_RotationSpeedHorizontal = 250.0f;
+    [SerializeField]
+    private float m_RotationSpeedVertical = 120.0f;
+    [SerializeField]
+    private float m_MinVerticalAngle = -20f;
+    [SerializeField]
+    private float m_MaxVerticalAngle = 80f;
 
+    private bool m_MoveEnabled = true;
+    private bool m_RotationEnabled = true;
+    private CameraStates mCameraState;
     private Vector3 mCurrentMoveVector = Vector3.zero;
+    private Vector2 mCurrentRotationVector = Vector2.zero;
 
     private const float kStopThreshold = 0.005f;
+
+    public CameraStates GetState
+    {
+        get
+        {
+            return mCameraState;
+        }
+    }
+
+    public Transform SecondaryFollowPoint
+    {
+        get
+        {
+            return mSecondFollowPoint;
+        }
+    }
 
     private void Start()
     {
@@ -29,6 +64,25 @@ public class MoveCamera : MonoBehaviour
 
     public void Update()
     {
+        UpdateRotation();
+        UpdateMovement();
+    }
+
+    public void UpdateRotation()
+    {
+        if (!m_RotationEnabled)
+        {
+            return;
+        }
+    }
+
+    public void UpdateMovement()
+    {
+        if (!m_MoveEnabled)
+        {
+            return;
+        }
+
         m_CameraTransform.position += (m_CameraTransform.forward * mCurrentMoveVector.z);
         m_CameraTransform.position += (m_CameraTransform.right * mCurrentMoveVector.x);
         m_CameraTransform.position += (Vector3.up * mCurrentMoveVector.y);
@@ -47,49 +101,50 @@ public class MoveCamera : MonoBehaviour
     public void InputHandler(object sender, UserInputEvent evt)
     {
         Vector3 moveValue = Vector3.zero;
+        Vector3 rotationValue = Vector3.zero;
 
         if (evt.KeyBind.BindingName == "JoystickLeft")
         {
             float xAmount = evt.JoystickInfo.AmountX;
             float yAmount = evt.JoystickInfo.AmountY;
 
-            moveValue.z += (yAmount * m_AccelHorizontal) * Time.deltaTime;
-            moveValue.x += (xAmount * m_AccelHorizontal) * Time.deltaTime;
+            moveValue.z += (yAmount * m_MoveAccelHorizontal) * Time.deltaTime;
+            moveValue.x += (xAmount * m_MoveAccelHorizontal) * Time.deltaTime;
         }
 
         if (evt.KeyBind.BindingName == "Forward")
         {
-            moveValue.z += (m_AccelHorizontal) * Time.deltaTime;
+            moveValue.z += (m_MoveAccelHorizontal) * Time.deltaTime;
         }
         
         if (evt.KeyBind.BindingName == "Back")
         {
-            moveValue.z += (-m_AccelHorizontal) * Time.deltaTime;
+            moveValue.z += (-m_MoveAccelHorizontal) * Time.deltaTime;
         }
 
         if (evt.KeyBind.BindingName == "Left")
         {
-            moveValue.x += (-m_AccelHorizontal) * Time.deltaTime;
+            moveValue.x += (-m_MoveAccelHorizontal) * Time.deltaTime;
         }        
 
         if (evt.KeyBind.BindingName == "Right")
         {
-            moveValue.x += (m_AccelHorizontal) * Time.deltaTime;
+            moveValue.x += (m_MoveAccelHorizontal) * Time.deltaTime;
         }
 
         if (evt.KeyBind.BindingName == "Raise")
         {
-            moveValue.y += (m_AccelVertical) * Time.deltaTime;
+            moveValue.y += (m_MoveAccelVertical) * Time.deltaTime;
         }
 
         if (evt.KeyBind.BindingName == "Lower")
         {
-            moveValue.y += (-m_AccelVertical) * Time.deltaTime;
+            moveValue.y += (-m_MoveAccelVertical) * Time.deltaTime;
         }
 
         if (moveValue != Vector3.zero)
         {
-            mCurrentMoveVector = Vector3.Min(mCurrentMoveVector + moveValue, new Vector3(m_MoveSpeedHorizontal, m_MoveSpeedVertical, m_MoveSpeedHorizontal));
+            mCurrentMoveVector = Vector3.Min(mCurrentMoveVector + moveValue, new Vector3(m_MaxMoveSpeedHorizontal, m_MaxMoveSpeedVertical, m_MaxMoveSpeedHorizontal));
         }
     }
 }

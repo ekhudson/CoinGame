@@ -376,25 +376,25 @@ public class UserInput : Singleton<UserInput>
 
 	private void GatherJoystickInput(GamePadState state, PlayerIndex playerIndex)
 	{
-		if(state.Triggers.Left > 0)
-		{
+		//if(state.Triggers.Left > 0)
+		//{
 			ProcessJoystickInput(KeyBinding.GamePadJoystickValues.LeftTrigger, state.Triggers.Left, 0, playerIndex);
-		}
+		//}
 
-		if(state.Triggers.Right > 0)
-		{
+		//if(state.Triggers.Right > 0)
+		//{
 			ProcessJoystickInput(KeyBinding.GamePadJoystickValues.RightTrigger, state.Triggers.Right, 0, playerIndex);
-		}
+		//}
 
-		if (state.ThumbSticks.Left.X != 0 || state.ThumbSticks.Left.Y != 0)
-		{
+		//if (state.ThumbSticks.Left.X != 0 || state.ThumbSticks.Left.Y != 0)
+		//{
 			ProcessJoystickInput(KeyBinding.GamePadJoystickValues.LeftStick, state.ThumbSticks.Left.X, state.ThumbSticks.Left.Y, playerIndex);
-		}
+		//}
 
-		if (state.ThumbSticks.Right.X != 0 || state.ThumbSticks.Right.Y != 0)
-		{
+		//if (state.ThumbSticks.Right.X != 0 || state.ThumbSticks.Right.Y != 0)
+		//{
 			ProcessJoystickInput(KeyBinding.GamePadJoystickValues.RightStick, state.ThumbSticks.Right.X, state.ThumbSticks.Right.Y, playerIndex);
-		}
+		//}
 	}
 
 	private void ProcessJoystickInput(KeyBinding.GamePadJoystickValues joystick, float valueX, float valueY, PlayerIndex playerIndex)
@@ -414,8 +414,18 @@ public class UserInput : Singleton<UserInput>
 			valueY = 0;
 		}
 
-		foreach(KeyBinding binding in mGamepadJoystickBindings[joystick])
-		{
+        bool isDown = valueY != 0 || valueX != 0;
+
+
+        foreach (KeyBinding binding in mGamepadJoystickBindings[joystick])
+		{            
+            if (!isDown && !binding.IsDown)
+            {
+                return;
+            }
+
+            binding.IsDown = isDown;
+
 			if (binding.Enabled)
 			{
 				EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_JOYSTICK, binding, new UserInputEvent.JoystickInfoClass(valueX, valueY), (int)playerIndex, Vector3.zero, this));
