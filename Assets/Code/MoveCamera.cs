@@ -42,8 +42,6 @@ public class MoveCamera : MonoBehaviour
                 mCurrentMoveVector = Vector3.zero;
             }
         }
-
-        Debug.Log("Move: " + mCurrentMoveVector);
     }
 
     public void InputHandler(object sender, UserInputEvent evt)

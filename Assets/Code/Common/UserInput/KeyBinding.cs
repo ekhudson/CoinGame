@@ -1,20 +1,16 @@
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-
-using XInputDotNetPure;
-
+using Sirenix.OdinInspector;
 [System.Serializable]
 public class KeyBinding
 {
     public string BindingName = "New Binding";
-    public KeyCode Key = KeyCode.A;
-    public KeyCode AltKey = KeyCode.B;
-    public bool Enabled = true;
-    public MouseButtons MouseButton = MouseButtons.None;
-    public MouseButtons AltMouseButton = MouseButtons.None;
-    public GamePadButtonValues ControllerButtons = GamePadButtonValues.None;
-    public GamePadJoystickValues ControllerJoysticks = GamePadJoystickValues.None;
+    [FoldoutGroup("Binding")] public KeyCode Key = KeyCode.A;
+    [FoldoutGroup("Binding")] public KeyCode AltKey = KeyCode.B;
+    [FoldoutGroup("Binding")] public bool Enabled = true;
+    [FoldoutGroup("Binding")] public MouseButtons MouseButton = MouseButtons.None;
+    [FoldoutGroup("Binding")] public MouseButtons AltMouseButton = MouseButtons.None;
+    [FoldoutGroup("Binding")] public GamePadButtonValues ControllerButtons = GamePadButtonValues.None;
+    [FoldoutGroup("Binding")] public GamePadJoystickValues ControllerJoysticks = GamePadJoystickValues.None;
 
     private bool mIsDown = false;
 

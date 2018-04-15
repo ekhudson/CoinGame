@@ -4,6 +4,14 @@ using System.Collections.Generic;
 
 public class PlayerScript : MonoBehaviour 
 {
+    public enum PlayerStates
+    {
+        IDLE,
+        CHARGING,
+        THROWN,
+    }
+
+
     public GameObject PlayerCoinPrefab;
     public BoxCollider CoinBounds;
     public LayerMask CoinLayerMask;
@@ -28,6 +36,8 @@ public class PlayerScript : MonoBehaviour
     private bool mNeedReload = false;
     private Ray mRay;
     private RaycastHit mHit;
+    private bool mThrowKeyDown = false;
+    private PlayerStates mPlayerState = PlayerStates.IDLE;
 
     private float mCurrentStrength = 0.5f;
 
@@ -59,11 +69,11 @@ public class PlayerScript : MonoBehaviour
 
     private void Start()
     {
+        EventManager.Instance.AddHandler<UserInputEvent>(InputHandler);
+
         mCamera = Camera.main;
         mPreviewCoin = (GameObject)GameObject.Instantiate(PlayerCoinPrefab);
-        mPreviewRenderer = mPreviewCoin.GetComponent<MeshRenderer>();
-
-        
+        mPreviewRenderer = mPreviewCoin.GetComponent<MeshRenderer>();        
 
         mDefaultFixedTimeStep = Time.fixedDeltaTime;
 
@@ -99,7 +109,12 @@ public class PlayerScript : MonoBehaviour
         EventManager.Instance.AddHandler<PlayerCoinImpactEvent>(PlayerCoinImpactEventHandler);
     }
 
-	private void LateUpdate()
+    private void OnDestroy()
+    {
+        EventManager.Instance.RemoveHandler<UserInputEvent>(InputHandler);
+    }
+
+    private void LateUpdate()
     {
         if (WhiteTexture == null)
         {
@@ -133,8 +148,9 @@ public class PlayerScript : MonoBehaviour
 
         if (mNeedReload)
         {
-            if (Input.GetKeyUp(KeyCode.Space) || Input.GetMouseButtonUp(0) && !mGamePaused)
+            if (mThrowKeyDown && mPlayerState == PlayerStates.THROWN && !mGamePaused)
             {
+                mPlayerState = PlayerStates.IDLE;
                 mNeedReload = false;
                 Reload();
             }
@@ -162,43 +178,6 @@ public class PlayerScript : MonoBehaviour
             {
                 CoinCenterOffset = Vector3.zero;
             }
-
-            if (Input.GetMouseButton(2))
-            {
-                //Pan();
-            }
-
-            //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            //{
-            //    mMoveDirection  += -transform.right;
-            //}
-
-            //if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            //{
-            //    mMoveDirection += transform.right;
-            //}
-
-            //if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-            //{
-            //    mMoveDirection += transform.forward;
-            //}
-
-            //if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-            //{
-            //    mMoveDirection += -transform.forward;
-            //}
-
-            //if (Input.GetKey(KeyCode.Space))
-            //{
-            //    mMoveDirection += Vector3.up;
-            //}
-
-            //if (Input.GetKey(KeyCode.C))
-            //{
-            //    mMoveDirection += -Vector3.up;
-            //}
-
-            //mOrbitScript.Target.transform.position += mMoveDirection * (PanSpeed * Time.unscaledDeltaTime);
 
             Vector3 mousePos = Input.mousePosition;
 
@@ -234,22 +213,53 @@ public class PlayerScript : MonoBehaviour
 
             if (!mGamePaused)
             {
-                if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
+                if (mThrowKeyDown && mPlayerState == PlayerStates.IDLE)
                 {
+                    mPlayerState = PlayerStates.CHARGING;
                     mMaxHoldTime = (CoinForceMax / ForcePerSecond);
                     mTimeMouseButtonHeld = 0f;
                     return;
                 }
 
-                if (Input.GetMouseButton(0) || Input.GetKeyDown(KeyCode.Space))
+                if (mThrowKeyDown && mPlayerState == PlayerStates.CHARGING)
                 {
                     mTimeMouseButtonHeld += Time.deltaTime;
                 }
 
-                if (Input.GetMouseButtonUp(0) || Input.GetKeyDown(KeyCode.Space))
+                if (!mThrowKeyDown && mPlayerState == PlayerStates.CHARGING)
                 {
+                    mPlayerState = PlayerStates.THROWN;
                     SpawnCoin();
                     mNeedReload = true;
+                }
+            }
+        }
+    }
+
+    private void InputHandler(object sender, UserInputEvent evt)
+    {
+        if (evt.KeyBind.BindingName == "Throw")
+        {
+            if (evt.JoystickInfo != null)
+            {
+                if (evt.JoystickInfo.Value.magnitude > 0)
+                {
+                    mThrowKeyDown = true;
+                }
+                else
+                {
+                    mThrowKeyDown = false;
+                }
+            }
+            else
+            {
+                if (evt.KeyBind.IsDown)
+                {
+                    mThrowKeyDown = true;
+                }
+                else
+                {
+                    mThrowKeyDown = false;
                 }
             }
         }

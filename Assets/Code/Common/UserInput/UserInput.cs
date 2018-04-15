@@ -335,17 +335,20 @@ public class UserInput : Singleton<UserInput>
 			{
 				if (!mKeyDownDict[playerIndexInt].Contains(binding) && buttonState == ButtonState.Pressed)
 				{
+                    binding.IsDown = true;
 					mKeyDownDict[playerIndexInt].Add(binding);
 					EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_DOWN, binding, playerIndexInt, Vector3.zero, this));
 				}
 				else if (mKeyDownDict[playerIndexInt].Contains(binding) && buttonState == ButtonState.Released)
 				{
-					mKeyDownDict[playerIndexInt].Remove(binding);
+                    binding.IsDown = false;
+                    mKeyDownDict[playerIndexInt].Remove(binding);
 					EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_UP, binding, playerIndexInt, Vector3.zero, this));
 				}
 				else if (mKeyDownDict[playerIndexInt].Contains(binding) && buttonState == ButtonState.Pressed)
 				{
-					EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_HELD, binding, playerIndexInt, Vector3.zero, this));
+                    binding.IsDown = true;
+                    EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_HELD, binding, playerIndexInt, Vector3.zero, this));
 				}
 			}
 		}
@@ -383,15 +386,15 @@ public class UserInput : Singleton<UserInput>
 			ProcessJoystickInput(KeyBinding.GamePadJoystickValues.RightTrigger, state.Triggers.Right, 0, playerIndex);
 		}
 
-		//if (state.ThumbSticks.Left.X > 0 || state.ThumbSticks.Left.Y > 0)
-		//{
+		if (state.ThumbSticks.Left.X != 0 || state.ThumbSticks.Left.Y != 0)
+		{
 			ProcessJoystickInput(KeyBinding.GamePadJoystickValues.LeftStick, state.ThumbSticks.Left.X, state.ThumbSticks.Left.Y, playerIndex);
-		//}
+		}
 
-		//if (state.ThumbSticks.Right.X > 0 || state.ThumbSticks.Right.Y > 0)
-		//{
+		if (state.ThumbSticks.Right.X != 0 || state.ThumbSticks.Right.Y != 0)
+		{
 			ProcessJoystickInput(KeyBinding.GamePadJoystickValues.RightStick, state.ThumbSticks.Right.X, state.ThumbSticks.Right.Y, playerIndex);
-		//}
+		}
 	}
 
 	private void ProcessJoystickInput(KeyBinding.GamePadJoystickValues joystick, float valueX, float valueY, PlayerIndex playerIndex)
