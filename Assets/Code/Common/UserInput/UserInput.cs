@@ -15,18 +15,18 @@ public class UserInput : Singleton<UserInput>
     private float m_JoystickDeadzoneY = 0.2f;
     [SerializeField]
     [InlineEditor]
-    private KeyBindingsAsset m_BindingsAsset;
+    private UserActionSetAsset m_ActionSetAsset;
 
-    private List<KeyBinding> mKeyBindings = new List<KeyBinding>();
+    private Dictionary<string, List<UserAction>> mActionsDictionary = new Dictionary<string, List<UserAction>>();
 
-    private Dictionary<KeyCode, List<KeyBinding>> mKeyBindingsDictionary = new Dictionary<KeyCode, List<KeyBinding>>();
-    private Dictionary<KeyBinding.MouseButtons, List<KeyBinding>> mMouseBindingsDictionary = new Dictionary<KeyBinding.MouseButtons, List<KeyBinding>>();
-	private Dictionary<KeyBinding.GamePadButtonValues, List<KeyBinding>> mGamepPadButtonBindings = new Dictionary<KeyBinding.GamePadButtonValues, List<KeyBinding>>();
-	private Dictionary<KeyBinding.GamePadJoystickValues, List<KeyBinding>> mGamepadJoystickBindings = new Dictionary<KeyBinding.GamePadJoystickValues, List<KeyBinding>>();
+    private Dictionary<KeyCode, List<UserAction>> mKeyBindingsDictionary = new Dictionary<KeyCode, List<UserAction>>();
+    private Dictionary<KeyBinding.MouseButtons, List<UserAction>> mMouseBindingsDictionary = new Dictionary<KeyBinding.MouseButtons, List<UserAction>>();
+	private Dictionary<KeyBinding.GamePadButtonValues, List<UserAction>> mGamepPadButtonBindings = new Dictionary<KeyBinding.GamePadButtonValues, List<UserAction>>();
+	private Dictionary<KeyBinding.GamePadJoystickValues, List<UserAction>> mGamepadJoystickBindings = new Dictionary<KeyBinding.GamePadJoystickValues, List<UserAction>>();
 
-    private List<KeyBinding> mKeysDown = new List<KeyBinding>();
+    private List<UserAction> mKeysDown = new List<UserAction>();
 
-	private Dictionary<int, List<KeyBinding>> mKeyDownDict = new Dictionary<int, List<KeyBinding>>();
+	private Dictionary<int, List<UserAction>> mKeyDownDict = new Dictionary<int, List<UserAction>>();
 	
 	private List<int> mConnectControllerIndexes = new List<int>();
 
@@ -46,7 +46,6 @@ public class UserInput : Singleton<UserInput>
 
     private void Start ()
     {
-        // GatherKeyBindings(this.GetType());
         GatherKeyBindings();
         StoreKeyBindings();
         mKeysDown.Clear();
@@ -54,7 +53,7 @@ public class UserInput : Singleton<UserInput>
 
 		for(int i = 0; i < 4; i++)
 		{
-			mKeyDownDict.Add(i, new List<KeyBinding>());
+			mKeyDownDict.Add(i, new List<UserAction>());
 		}
     }
 
@@ -74,90 +73,105 @@ public class UserInput : Singleton<UserInput>
 
     public void GatherKeyBindings()
     {
-        if (m_BindingsAsset == null)
+        if (m_ActionSetAsset == null)
         {
             Debug.LogError("No Key Bindings Asset Specified! Input disabled.");
             enabled = false;
             return;
         }
 
-        mKeyBindings = new List<KeyBinding>(m_BindingsAsset.KeyBindings);
+        foreach(UserActionSet set in m_ActionSetAsset.ActionSets)
+        {
+            List<UserAction> actions = new List<UserAction>();
+
+            foreach(UserActionDefinition definition in set.Actions)
+            {
+                actions.Add(new UserAction(definition.Name, definition.Binding));
+            }
+
+            mActionsDictionary.Add(set.SetName, actions);
+        }
+    }
+    
+    private void StoreKeyBindings()
+    {
+
     }
 
     //Store all the KeyBindings for easy referencing
-    private void StoreKeyBindings()
+    private void ParseActionSet(List<UserAction> setList)
     {
-        foreach(KeyBinding binding in mKeyBindings)
+        foreach(UserAction action in setList)
         {
-            if (binding.Key != KeyCode.None)
+            if (action.Binding.Key != KeyCode.None)
             {
-                if (!mKeyBindingsDictionary.ContainsKey(binding.Key))
+                if (!mKeyBindingsDictionary.ContainsKey(action.Binding.Key))
                 {
-                    mKeyBindingsDictionary.Add(binding.Key, new List<KeyBinding>(){ binding } );
+                    mKeyBindingsDictionary.Add(action.Binding.Key, new List<UserAction>(){ action } );
                 }
                 else
                 {
-                    mKeyBindingsDictionary[binding.Key].Add(binding);
+                    mKeyBindingsDictionary[action.Binding.Key].Add(action);
                 }
             }
 
-            if (binding.AltKey != KeyCode.None)
+            if (action.Binding.AltKey != KeyCode.None)
             {
-                if (!mKeyBindingsDictionary.ContainsKey(binding.AltKey))
+                if (!mKeyBindingsDictionary.ContainsKey(action.Binding.AltKey))
                 {
-                    mKeyBindingsDictionary.Add(binding.AltKey, new List<KeyBinding>(){ binding });
+                    mKeyBindingsDictionary.Add(action.Binding.AltKey, new List<UserAction>(){ action });
                 }
                 else
                 {
-                    mKeyBindingsDictionary[binding.AltKey].Add(binding);
+                    mKeyBindingsDictionary[action.Binding.AltKey].Add(action);
                 }
             }
 
-            if (binding.MouseButton != KeyBinding.MouseButtons.None)
+            if (action.Binding.MouseButton != KeyBinding.MouseButtons.None)
             {
-                if (!mMouseBindingsDictionary.ContainsKey(binding.MouseButton))
+                if (!mMouseBindingsDictionary.ContainsKey(action.Binding.MouseButton))
                 {
-                    mMouseBindingsDictionary.Add(binding.MouseButton, new List<KeyBinding>(){ binding });
+                    mMouseBindingsDictionary.Add(action.Binding.MouseButton, new List<UserAction>(){ action });
                 }
                 else
                 {
-                    mMouseBindingsDictionary[binding.MouseButton].Add(binding);
+                    mMouseBindingsDictionary[action.Binding.MouseButton].Add(action);
                 }
             }
 
-            if (binding.AltMouseButton != KeyBinding.MouseButtons.None)
+            if (action.Binding.AltMouseButton != KeyBinding.MouseButtons.None)
             {
-                if (!mMouseBindingsDictionary.ContainsKey(binding.AltMouseButton))
+                if (!mMouseBindingsDictionary.ContainsKey(action.Binding.AltMouseButton))
                 {
-                    mMouseBindingsDictionary.Add(binding.AltMouseButton, new List<KeyBinding>(){ binding });
+                    mMouseBindingsDictionary.Add(action.Binding.AltMouseButton, new List<UserAction>(){ action });
                 }
                 else
                 {
-                    mMouseBindingsDictionary[binding.AltMouseButton].Add(binding);
+                    mMouseBindingsDictionary[action.Binding.AltMouseButton].Add(action);
                 }
             }
 
-			if (binding.ControllerButtons != KeyBinding.GamePadButtonValues.None)
+			if (action.Binding.ControllerButtons != KeyBinding.GamePadButtonValues.None)
 			{
-				if (!mGamepPadButtonBindings.ContainsKey(binding.ControllerButtons))
+				if (!mGamepPadButtonBindings.ContainsKey(action.Binding.ControllerButtons))
 				{
-					mGamepPadButtonBindings.Add(binding.ControllerButtons, new List<KeyBinding>(){ binding });
+					mGamepPadButtonBindings.Add(action.Binding.ControllerButtons, new List<UserAction>(){ action });
 				}
 				else
 				{
-					mGamepPadButtonBindings[binding.ControllerButtons].Add(binding);
+					mGamepPadButtonBindings[action.Binding.ControllerButtons].Add(action);
 				}
 			}
 
-			if (binding.ControllerJoysticks != KeyBinding.GamePadJoystickValues.None)
+			if (action.Binding.ControllerJoysticks != KeyBinding.GamePadJoystickValues.None)
 			{
-				if (!mGamepadJoystickBindings.ContainsKey(binding.ControllerJoysticks))
+				if (!mGamepadJoystickBindings.ContainsKey(action.Binding.ControllerJoysticks))
 				{
-					mGamepadJoystickBindings.Add(binding.ControllerJoysticks, new List<KeyBinding>(){ binding });
+					mGamepadJoystickBindings.Add(action.Binding.ControllerJoysticks, new List<UserAction>(){ action });
 				}
 				else
 				{
-					mGamepadJoystickBindings[binding.ControllerJoysticks].Add(binding);
+					mGamepadJoystickBindings[action.Binding.ControllerJoysticks].Add(action);
 				}
 			}
         }
@@ -165,10 +179,10 @@ public class UserInput : Singleton<UserInput>
 
     private void Update ()
     {
-        foreach(KeyBinding binding in mKeysDown)
-        {
-            EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.KEYHELD, binding, 0, Vector3.zero, this));
-        }
+        //foreach(UserAction binding in mKeysDown)
+        //{
+        //    EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.KEYHELD, binding, 0, Vector3.zero, this));
+        //}
     }
 
     private void OnGUI()
@@ -203,33 +217,33 @@ public class UserInput : Singleton<UserInput>
             return;
         }
 
-        foreach(KeyBinding binding in mKeyBindingsDictionary[code])
+        foreach(UserAction action in mKeyBindingsDictionary[code])
         {
-            if (binding.Enabled)
+            if (action.Enabled)
             {
-                if (inputType == UserInputEvent.TYPE.KEYDOWN && mKeysDown.Contains(binding))
+                if (inputType == UserInputEvent.TYPE.KEYDOWN && mKeysDown.Contains(action))
 				{
 					inputType = UserInputEvent.TYPE.KEYHELD;
 				}
 
-				EventManager.Instance.Post(new UserInputEvent(inputType, binding, 0, Vector3.zero, this)); //TODO: Figure out how to get proper player index
+				//EventManager.Instance.Post(new UserInputEvent(inputType, action, 0, Vector3.zero, this)); //TODO: Figure out how to get proper player index
 
                 if (inputType == UserInputEvent.TYPE.KEYDOWN)
                 {
-                    binding.IsDown = true;
+                    action.State = UserAction.ActionStates.PRESSED;
 
-                    if (!mKeysDown.Contains(binding))
+                    if (!mKeysDown.Contains(action))
                     {
-                        mKeysDown.Add(binding);
+                        mKeysDown.Add(action);
                     }
                 }
                 else if (inputType == UserInputEvent.TYPE.KEYUP)
                 {
-                    binding.IsDown = false;
+                    action.State = UserAction.ActionStates.NONE;
 
-                    if (mKeysDown.Contains(binding))
+                    if (mKeysDown.Contains(action))
                     {
-                        mKeysDown.Remove(binding);
+                        mKeysDown.Remove(action);
                     }
                 }
             }
@@ -246,15 +260,15 @@ public class UserInput : Singleton<UserInput>
             return;
         }
 
-        foreach(KeyBinding binding in mMouseBindingsDictionary[mouseButton])
+        foreach(UserAction binding in mMouseBindingsDictionary[mouseButton])
         {
             if (binding.Enabled)
             {
-                EventManager.Instance.Post(new UserInputEvent(inputType, binding, 0, Vector3.zero, this));
+               // EventManager.Instance.Post(new UserInputEvent(inputType, binding, 0, Vector3.zero, this));
 
                 if (inputType == UserInputEvent.TYPE.KEYDOWN)
                 {
-                    binding.IsDown = true;
+                    binding.State = UserAction.ActionStates.PRESSED;
 
                     if (!mKeysDown.Contains(binding))
                     {
@@ -263,7 +277,7 @@ public class UserInput : Singleton<UserInput>
                 }
                 else if (inputType == UserInputEvent.TYPE.KEYUP)
                 {
-                    binding.IsDown = false;
+                    binding.State = UserAction.ActionStates.NONE;
 
                     if (mKeysDown.Contains(binding))
                     {
@@ -324,7 +338,7 @@ public class UserInput : Singleton<UserInput>
 
 		int playerIndexInt = (int)playerIndex;
 
-		foreach(KeyBinding binding in mGamepPadButtonBindings[button])
+		foreach(UserAction binding in mGamepPadButtonBindings[button])
 		{
 			if (buttonState == ButtonState.Released && !mKeyDownDict[playerIndexInt].Contains(binding))
 			{
@@ -336,16 +350,16 @@ public class UserInput : Singleton<UserInput>
 				if (!mKeyDownDict[playerIndexInt].Contains(binding) && buttonState == ButtonState.Pressed)
 				{
 					mKeyDownDict[playerIndexInt].Add(binding);
-					EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_DOWN, binding, playerIndexInt, Vector3.zero, this));
+					//EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_DOWN, binding, playerIndexInt, Vector3.zero, this));
 				}
 				else if (mKeyDownDict[playerIndexInt].Contains(binding) && buttonState == ButtonState.Released)
 				{
 					mKeyDownDict[playerIndexInt].Remove(binding);
-					EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_UP, binding, playerIndexInt, Vector3.zero, this));
+					//EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_UP, binding, playerIndexInt, Vector3.zero, this));
 				}
 				else if (mKeyDownDict[playerIndexInt].Contains(binding) && buttonState == ButtonState.Pressed)
 				{
-					EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_HELD, binding, playerIndexInt, Vector3.zero, this));
+					//EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_BUTTON_HELD, binding, playerIndexInt, Vector3.zero, this));
 				}
 			}
 		}
@@ -411,11 +425,11 @@ public class UserInput : Singleton<UserInput>
 			valueY = 0;
 		}
 
-		foreach(KeyBinding binding in mGamepadJoystickBindings[joystick])
+		foreach(UserAction binding in mGamepadJoystickBindings[joystick])
 		{
 			if (binding.Enabled)
 			{
-				EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_JOYSTICK, binding, new UserInputEvent.JoystickInfoClass(valueX, valueY), (int)playerIndex, Vector3.zero, this));
+				//EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.GAMEPAD_JOYSTICK, binding, new UserInputEvent.JoystickInfoClass(valueX, valueY), (int)playerIndex, Vector3.zero, this));
 			}
 		}
 	}
@@ -423,34 +437,17 @@ public class UserInput : Singleton<UserInput>
     /// <summary>
     /// Enables or disables a binding.
     /// </summary>
-    /// <param name='binding'>
+    /// <param name='action'>
     /// Binding.
     /// </param>
     /// <param name='enable'>
     /// Enable (true) / Disable (false).
     /// </param>
-    public void EnableBinding(KeyBinding binding, bool enable)
+    public void EnableBinding(string set, UserAction action, bool enable)
     {
-        if(mKeyBindings.Contains(binding))
+        if(mActionsDictionary[set].Contains(action))
         {
-                binding.Enabled = enable;
-        }
-    }
-
-    /// <summary>
-    /// Enables or disables several bindings.
-    /// </summary>
-    /// <param name='bindings'>
-    /// Array of bindings.
-    /// </param>
-    /// <param name='enable'>
-    /// Enable (true) / Disable (false).
-    /// </param>
-    public void EnableBindings(KeyBinding[] bindings, bool enable)
-    {
-        foreach(KeyBinding binding in bindings)
-        {
-            EnableBinding(binding, enable);
+                action.Enabled = enable;
         }
     }
 }

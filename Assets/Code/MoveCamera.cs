@@ -22,11 +22,6 @@ public class MoveCamera : MonoBehaviour
 
     private const float kStopThreshold = 0.005f;
 
-    private void Start()
-    {
-        EventManager.Instance.AddHandler<UserInputEvent>(InputHandler);
-    }
-
     public void Update()
     {
         m_CameraTransform.position += (m_CameraTransform.forward * mCurrentMoveVector.z);

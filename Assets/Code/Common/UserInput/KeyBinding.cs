@@ -7,20 +7,15 @@ using XInputDotNetPure;
 [System.Serializable]
 public class KeyBinding
 {
-    public string BindingName = "New Binding";
     public KeyCode Key = KeyCode.A;
     public KeyCode AltKey = KeyCode.B;
-    public bool Enabled = true;
     public MouseButtons MouseButton = MouseButtons.None;
     public MouseButtons AltMouseButton = MouseButtons.None;
     public GamePadButtonValues ControllerButtons = GamePadButtonValues.None;
     public GamePadJoystickValues ControllerJoysticks = GamePadJoystickValues.None;
 
-    private bool mIsDown = false;
-
-	public KeyBinding(string bindingName, KeyCode key, KeyCode altKey, MouseButtons mouseButton, MouseButtons altMouseButton, GamePadButtonValues controllerButtons, GamePadJoystickValues joysticks)
+	public KeyBinding(KeyCode key, KeyCode altKey, MouseButtons mouseButton, MouseButtons altMouseButton, GamePadButtonValues controllerButtons, GamePadJoystickValues joysticks)
 	{
-		BindingName = bindingName;
 		Key = key;
 		AltKey = altKey;
 		MouseButton = mouseButton;
@@ -29,9 +24,8 @@ public class KeyBinding
 		ControllerJoysticks = joysticks;
 	}
 
-	public KeyBinding(string bindingName, KeyCode key, KeyCode altKey, MouseButtons mouseButton, MouseButtons altMouseButton, GamePadButtonValues controllerButtons)
+	public KeyBinding(KeyCode key, KeyCode altKey, MouseButtons mouseButton, MouseButtons altMouseButton, GamePadButtonValues controllerButtons)
 	{
-		BindingName = bindingName;
 		Key = key;
 		AltKey = altKey;
 		MouseButton = mouseButton;
@@ -39,46 +33,30 @@ public class KeyBinding
 		ControllerButtons = controllerButtons;
 	}
 
-    public KeyBinding(string bindingName, KeyCode key, KeyCode altKey, MouseButtons mouseButton, MouseButtons altMouseButton)
+    public KeyBinding(KeyCode key, KeyCode altKey, MouseButtons mouseButton, MouseButtons altMouseButton)
     {
-        BindingName = bindingName;
         Key = key;
         AltKey = altKey;
         MouseButton = mouseButton;
         AltMouseButton = altMouseButton;
     }
 
-    public KeyBinding(string bindingName, KeyCode key, KeyCode altKey)
+    public KeyBinding(KeyCode key, KeyCode altKey)
     {
-        BindingName = bindingName;
         Key = key;
         AltKey = altKey;
         MouseButton = MouseButtons.None;
         AltMouseButton = MouseButtons.None;
     }
 
-    public KeyBinding(string bindingName, GamePadButtonValues controllerButtons)
+    public KeyBinding(GamePadButtonValues controllerButtons)
     {
-        BindingName = bindingName;
         ControllerButtons = controllerButtons;
     }
 
-    public KeyBinding(string bindingName, GamePadJoystickValues joysticks)
+    public KeyBinding(GamePadJoystickValues joysticks)
     {
-        BindingName = bindingName;
         ControllerJoysticks = joysticks;
-    }
-
-    public bool IsDown
-    {
-        get
-        {
-            return mIsDown;
-        }
-        set
-        {
-            mIsDown = value;
-        }
     }
 
     public enum MouseButtons
