@@ -20,8 +20,9 @@ public class UserInput : Singleton<UserInput>
     private List<KeyBinding> mKeyBindings = new List<KeyBinding>();
 
     private Dictionary<KeyCode, List<KeyBinding>> mKeyBindingsDictionary = new Dictionary<KeyCode, List<KeyBinding>>();
-    private Dictionary<KeyBinding.MouseButtons, List<KeyBinding>> mMouseBindingsDictionary = new Dictionary<KeyBinding.MouseButtons, List<KeyBinding>>();
-	private Dictionary<KeyBinding.GamePadButtonValues, List<KeyBinding>> mGamepPadButtonBindings = new Dictionary<KeyBinding.GamePadButtonValues, List<KeyBinding>>();
+    private Dictionary<KeyBinding.MouseButtons, List<KeyBinding>> mMouseButtonBindingsDictionary = new Dictionary<KeyBinding.MouseButtons, List<KeyBinding>>();
+    private Dictionary<KeyBinding.MouseAxes, List<KeyBinding>> mMouseAxesBindingsDictionary = new Dictionary<KeyBinding.MouseAxes, List<KeyBinding>>();
+    private Dictionary<KeyBinding.GamePadButtonValues, List<KeyBinding>> mGamepPadButtonBindings = new Dictionary<KeyBinding.GamePadButtonValues, List<KeyBinding>>();
 	private Dictionary<KeyBinding.GamePadJoystickValues, List<KeyBinding>> mGamepadJoystickBindings = new Dictionary<KeyBinding.GamePadJoystickValues, List<KeyBinding>>();
 
     private List<KeyBinding> mKeysDown = new List<KeyBinding>();
@@ -46,7 +47,6 @@ public class UserInput : Singleton<UserInput>
 
     private void Start ()
     {
-        // GatherKeyBindings(this.GetType());
         GatherKeyBindings();
         StoreKeyBindings();
         mKeysDown.Clear();
@@ -115,25 +115,25 @@ public class UserInput : Singleton<UserInput>
 
             if (binding.MouseButton != KeyBinding.MouseButtons.None)
             {
-                if (!mMouseBindingsDictionary.ContainsKey(binding.MouseButton))
+                if (!mMouseButtonBindingsDictionary.ContainsKey(binding.MouseButton))
                 {
-                    mMouseBindingsDictionary.Add(binding.MouseButton, new List<KeyBinding>(){ binding });
+                    mMouseButtonBindingsDictionary.Add(binding.MouseButton, new List<KeyBinding>(){ binding });
                 }
                 else
                 {
-                    mMouseBindingsDictionary[binding.MouseButton].Add(binding);
+                    mMouseButtonBindingsDictionary[binding.MouseButton].Add(binding);
                 }
             }
 
             if (binding.AltMouseButton != KeyBinding.MouseButtons.None)
             {
-                if (!mMouseBindingsDictionary.ContainsKey(binding.AltMouseButton))
+                if (!mMouseButtonBindingsDictionary.ContainsKey(binding.AltMouseButton))
                 {
-                    mMouseBindingsDictionary.Add(binding.AltMouseButton, new List<KeyBinding>(){ binding });
+                    mMouseButtonBindingsDictionary.Add(binding.AltMouseButton, new List<KeyBinding>(){ binding });
                 }
                 else
                 {
-                    mMouseBindingsDictionary[binding.AltMouseButton].Add(binding);
+                    mMouseButtonBindingsDictionary[binding.AltMouseButton].Add(binding);
                 }
             }
 
@@ -189,7 +189,11 @@ public class UserInput : Singleton<UserInput>
         }
         else if (e.isMouse && e.type == EventType.MouseDown || e.type == EventType.MouseUp)
         {
-            ProcessMouseInput(e.button, e.type);
+            ProcessMouseButtonInput(e.button, e.type);
+        }
+        else if (e.isMouse && e.type == EventType.MouseMove)
+        {
+            EvaluateMouseAxesInput(e.delta);
         }
 
 		GatherGamePadInput();
@@ -236,17 +240,68 @@ public class UserInput : Singleton<UserInput>
         }
     }
 
-    private void ProcessMouseInput(int button, EventType evtType)
+    private void EvaluateMouseAxesInput(Vector2 mouseDelta)
+    {
+        float x = 0f;
+        float y = 0f;
+
+        foreach(KeyValuePair<KeyBinding.MouseAxes, List<KeyBinding>> pair in mMouseAxesBindingsDictionary)
+        {
+            if (pair.Key == KeyBinding.MouseAxes.X && mouseDelta.x != 0)
+            {
+                x = mouseDelta.x;
+                ProcessMouseAxesInput(pair.Value, x, y);
+            }
+            else if (pair.Key == KeyBinding.MouseAxes.Y && mouseDelta.y != 0)
+            {
+                y = mouseDelta.y;
+                ProcessMouseAxesInput(pair.Value, x, y);
+            }
+            else if (pair.Key == KeyBinding.MouseAxes.Both && (mouseDelta.x != 0 || mouseDelta.y != 0))
+            {
+                x = mouseDelta.x;
+                y = mouseDelta.y;
+                ProcessMouseAxesInput(pair.Value, x, y);
+            }
+            else
+            {
+                foreach (KeyBinding binding in pair.Value)
+                {
+                    if (binding.IsDown)
+                    {
+                        binding.IsDown = false;
+                        mKeysDown.Remove(binding);
+                    }
+                }
+            }
+        }
+    }
+
+    private void ProcessMouseAxesInput(List<KeyBinding> bindings, float x, float y)
+    {
+        foreach(KeyBinding binding in bindings)
+        {
+            if (!binding.IsDown)
+            {
+                mKeysDown.Add(binding);
+                binding.IsDown = true;
+            }
+
+            EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.MOUSE_MOVE, binding, new UserInputEvent.MouseDeltaInfoClass(x, y), 0, Vector3.zero, this));
+        }
+    }
+
+    private void ProcessMouseButtonInput(int button, EventType evtType)
     {
         KeyBinding.MouseButtons mouseButton = (KeyBinding.MouseButtons)(button + 1);
         UserInputEvent.TYPE inputType = evtType == EventType.MouseDown ? UserInputEvent.TYPE.KEYDOWN : UserInputEvent.TYPE.KEYUP;
 
-        if (!mMouseBindingsDictionary.ContainsKey(mouseButton))
+        if (!mMouseButtonBindingsDictionary.ContainsKey(mouseButton))
         {
             return;
         }
 
-        foreach(KeyBinding binding in mMouseBindingsDictionary[mouseButton])
+        foreach(KeyBinding binding in mMouseButtonBindingsDictionary[mouseButton])
         {
             if (binding.Enabled)
             {
@@ -271,7 +326,7 @@ public class UserInput : Singleton<UserInput>
                     }
                 }
             }
-        }
+        }        
     }
 
 	private void GatherGamePadInput()
