@@ -9,6 +9,7 @@ public class KeyBinding
     [FoldoutGroup("Binding")] public bool Enabled = true;
     [FoldoutGroup("Binding")] public MouseButtons MouseButton = MouseButtons.None;
     [FoldoutGroup("Binding")] public MouseButtons AltMouseButton = MouseButtons.None;
+    [FoldoutGroup("Binding")] public MouseAxes MouseAxis = KeyBinding.MouseAxes.None;
     [FoldoutGroup("Binding")] public GamePadButtonValues ControllerButtons = GamePadButtonValues.None;
     [FoldoutGroup("Binding")] public GamePadJoystickValues ControllerJoysticks = GamePadJoystickValues.None;
 
@@ -75,6 +76,14 @@ public class KeyBinding
         {
             mIsDown = value;
         }
+    }
+
+    public enum MouseAxes
+    {
+        None = 0,
+        X = 1,
+        Y = 2,
+        Both = 4,
     }
 
     public enum MouseButtons

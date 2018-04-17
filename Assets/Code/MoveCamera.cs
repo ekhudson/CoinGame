@@ -37,7 +37,6 @@ public class MoveCamera : BaseObject
     private bool m_RotationEnabled = true;
     private CameraStates mCameraState;
     private Transform mCurrentTarget;
-    private Transform mSecondFollowPoint = null;
     private bool mCustomFollowOrbit = false;
 
     private Vector3 mCurrentMoveVector = Vector3.zero;
@@ -51,14 +50,6 @@ public class MoveCamera : BaseObject
         get
         {
             return mCameraState;
-        }
-    }
-
-    public Transform SecondaryFollowPoint
-    {
-        get
-        {
-            return mSecondFollowPoint;
         }
     }
 
@@ -93,14 +84,14 @@ public class MoveCamera : BaseObject
 
         m_CameraTransform.rotation = newRotation;
 
-        if (mCameraState == CameraStates.FOLLOWING_SLAM && mSecondFollowPoint != null)
+        if (mCameraState == CameraStates.FOLLOWING_SLAM)
         {
             if (mCustomFollowOrbit)
             {
                 return;
             }
 
-            m_CameraTransform.rotation = Quaternion.RotateTowards(BaseTransform.rotation, Quaternion.LookRotation((mSecondFollowPoint.position - m_CameraTransform.position).normalized), 2f);
+            m_CameraTransform.rotation = Quaternion.RotateTowards(BaseTransform.rotation, Quaternion.LookRotation((mCurrentTarget.position - m_CameraTransform.position).normalized), 2f);
         }
         else
         {
@@ -183,6 +174,24 @@ public class MoveCamera : BaseObject
         if (moveValue != Vector3.zero)
         {
             mCurrentMoveVector = Vector3.Min(mCurrentMoveVector + moveValue, new Vector3(m_MaxMoveSpeedHorizontal, m_MaxMoveSpeedVertical, m_MaxMoveSpeedHorizontal));
+        }
+    }
+
+    public void FollowSlammer(Transform slammerTransform)
+    {
+        if ( (slammerTransform != null) && (mCameraState == CameraStates.IDLE) )
+        {
+            mCameraState = CameraStates.FOLLOWING_SLAM;
+            mCurrentTarget = slammerTransform;
+        }
+    }
+
+    public void SetToIdle()
+    {
+        if (mCameraState != CameraStates.IDLE)
+        {
+            mCurrentTarget = null;
+            mCameraState = CameraStates.IDLE;
         }
     }
 

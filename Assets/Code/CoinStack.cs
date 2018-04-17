@@ -20,6 +20,8 @@ public class CoinStack : MonoBehaviour
     private float mCoinHeight = 0f;
     private Vector3 mPosition = Vector3.zero;
     private float mCurrentTotalHeight = 0f;
+    private Vector3 mLastHitPoint = Vector3.zero;
+    private Vector3 mLastSpawnPoint = Vector3.zero;
 
 	// Use this for initialization
 	private void Start () 
@@ -31,7 +33,7 @@ public class CoinStack : MonoBehaviour
 
         if (CoinPrefab.GetComponent<CoinScript>() != null)
         {
-            mCoinHeight = CoinPrefab.GetComponent<CoinScript>().CoinMeshRenderer.bounds.size.y;
+            mCoinHeight = CoinPrefab.GetComponent<CoinScript>().CoinMeshRenderer.bounds.size.y * CoinPrefab.transform.lossyScale.y;
         } 
         else
         {
@@ -64,6 +66,19 @@ public class CoinStack : MonoBehaviour
         mCurrentSpawnDelay = 0f;
 	}
 
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.cyan;
+           
+        Gizmos.DrawSphere(mLastHitPoint, 0.05f);
+
+        Gizmos.color = Color.white;
+
+        Gizmos.DrawSphere(mLastSpawnPoint, 0.05f);
+
+        Gizmos.DrawLine(mLastSpawnPoint, mLastHitPoint);
+    }
+
     private void SpawnCoin()
     {
         Vector3 position = mPosition;
@@ -71,13 +86,16 @@ public class CoinStack : MonoBehaviour
         RaycastHit hit;
         Ray testRay = new Ray(mPosition + (Vector3.up * mCurrentSpawnCount) + (Vector3.up * 0.5f), Vector3.down);
 
-        int layerMask = 1 << LayerMask.NameToLayer("CoinLayer");
+        //int layerMask = 1 << LayerMask.NameToLayer("CoinLayer");
 
         //if (Physics.Raycast(testRay, out hit, 1000f, layerMask))
         if (Physics.Raycast(testRay, out hit, 100f))
         {
+            mLastHitPoint = hit.point;
             position = hit.point +  new Vector3(0f, mCoinHeight * 0.5f, 0f);
         }
+
+        mLastSpawnPoint = position;
 
         Vector3 positionOffset = Vector3.zero;
 
@@ -94,10 +112,9 @@ public class CoinStack : MonoBehaviour
 
         mCurrentSpawnCount++;
 
-        if (mCurrentSpawnCount > mSpawnAmount)
+        if (mCurrentSpawnCount >= mSpawnAmount)
         {
-            this.enabled = false;
-            //gameObject.SetActive(false);
+            enabled = false;
         }
     }
 }
