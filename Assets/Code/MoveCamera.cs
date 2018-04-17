@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using XInputDotNetPure;
 
-public class MoveCamera : MonoBehaviour
+public class MoveCamera : BaseObject
 {
     public enum CameraStates
     {
@@ -36,8 +36,13 @@ public class MoveCamera : MonoBehaviour
     private bool m_MoveEnabled = true;
     private bool m_RotationEnabled = true;
     private CameraStates mCameraState;
+    private Transform mCurrentTarget;
+    private Transform mSecondFollowPoint = null;
+    private bool mCustomFollowOrbit = false;
+
     private Vector3 mCurrentMoveVector = Vector3.zero;
     private Vector2 mCurrentRotationVector = Vector2.zero;
+    private Vector2 mCurrentRotationInputVector = Vector2.zero;
 
     private const float kStopThreshold = 0.005f;
 
@@ -73,6 +78,33 @@ public class MoveCamera : MonoBehaviour
         if (!m_RotationEnabled)
         {
             return;
+        }
+
+        Quaternion newRotation = m_CameraTransform.rotation;
+
+        mCustomFollowOrbit = (mCameraState == CameraStates.FOLLOWING_SLAM);
+        
+        mCurrentRotationVector.x += (mCurrentRotationInputVector.x * m_RotationSpeedHorizontal) * Time.unscaledDeltaTime;
+        mCurrentRotationVector.y -= (mCurrentRotationInputVector.y * m_RotationSpeedVertical) * Time.unscaledDeltaTime;
+
+        mCurrentRotationVector.y = ClampAngle(mCurrentRotationVector.y, m_MinVerticalAngle, m_MaxVerticalAngle);
+
+        newRotation = Quaternion.Euler(mCurrentRotationVector.y, mCurrentRotationVector.x, 0f);
+
+        m_CameraTransform.rotation = newRotation;
+
+        if (mCameraState == CameraStates.FOLLOWING_SLAM && mSecondFollowPoint != null)
+        {
+            if (mCustomFollowOrbit)
+            {
+                return;
+            }
+
+            m_CameraTransform.rotation = Quaternion.RotateTowards(BaseTransform.rotation, Quaternion.LookRotation((mSecondFollowPoint.position - m_CameraTransform.position).normalized), 2f);
+        }
+        else
+        {
+            m_CameraTransform.rotation = newRotation;
         }
     }
 
@@ -112,6 +144,12 @@ public class MoveCamera : MonoBehaviour
             moveValue.x += (xAmount * m_MoveAccelHorizontal) * Time.deltaTime;
         }
 
+        if (evt.KeyBind.BindingName == "JoystickRight")
+        {
+            mCurrentRotationInputVector.x = evt.JoystickInfo.AmountX;
+            mCurrentRotationInputVector.y = evt.JoystickInfo.AmountY;
+        }
+
         if (evt.KeyBind.BindingName == "Forward")
         {
             moveValue.z += (m_MoveAccelHorizontal) * Time.deltaTime;
@@ -146,5 +184,14 @@ public class MoveCamera : MonoBehaviour
         {
             mCurrentMoveVector = Vector3.Min(mCurrentMoveVector + moveValue, new Vector3(m_MaxMoveSpeedHorizontal, m_MaxMoveSpeedVertical, m_MaxMoveSpeedHorizontal));
         }
+    }
+
+    public static float ClampAngle(float angle, float min, float max)
+    {
+        if (angle < -360)
+            angle += 360;
+        if (angle > 360)
+            angle -= 360;
+        return Mathf.Clamp(angle, min, max);
     }
 }
