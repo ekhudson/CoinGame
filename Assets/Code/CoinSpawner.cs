@@ -5,8 +5,6 @@ public class CoinSpawner : MonoBehaviour
 {
     public GameObject CoinPrefab;
     public float MaxAngularVelocity = 10f;
-    //public Vector3 AngularVelocityMin = Vector3.zero;
-    //public Vector3 AngularVelocityMax = Vector3.zero;
     public Vector3 RotationMin = Vector3.zero;
     public Vector3 RotationMax = Vector3.zero;
     public float SpawnRadius = 10f;

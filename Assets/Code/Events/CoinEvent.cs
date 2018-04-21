@@ -8,7 +8,9 @@ public class CoinEvent : EventBase
 
     public enum CoinEventTypes
     {
-        LANDED_FACE_UP,
+        IMPACTED,
+        SETTLED_FACE_UP,
+        SETTLED_FACE_DOWN,
     }
     
     public CoinEvent(Object sender, CoinScript coin, CoinEventTypes coinEventType) : base(coin.transform.position, sender)

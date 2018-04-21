@@ -71,7 +71,7 @@ public class Scoreboard : MonoBehaviour
 
     public void CoinEventHandler(object sender, CoinEvent evt)
     {
-        if (evt.CoinEventType == CoinEvent.CoinEventTypes.LANDED_FACE_UP)
+        if (evt.CoinEventType == CoinEvent.CoinEventTypes.SETTLED_FACE_UP)
         {
             PlayerManager.Instance.GetPlayer(SessionManager.Instance.CurrentPlayerIndex).AddToScore(evt.Coin.Value);
         }

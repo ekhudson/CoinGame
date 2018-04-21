@@ -24,6 +24,14 @@ public class SessionManager : Singleton<SessionManager>
         }
     }
 
+    public SessionStates CurrentSessionState
+    {
+        get
+        {
+            return mCurrentState;
+        }
+    }
+
     private void Start()
     {
         EventManager.Instance.AddHandler<GameStateChangeEvent>(OnGameStateChangedEvent);
@@ -102,7 +110,7 @@ public class SessionManager : Singleton<SessionManager>
         SetState(SessionStates.OutOfSession);
     }
 
-    private void EndSession()
+    public void EndSession()
     {
         SetState(SessionStates.Ending);
     }

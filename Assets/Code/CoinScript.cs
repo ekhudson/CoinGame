@@ -43,12 +43,16 @@ public class CoinScript : BaseObject
             {
                 RemoveCoin();
             }
+            else
+            {
+                EventManager.Instance.Post(new CoinEvent(this, this, CoinEvent.CoinEventTypes.SETTLED_FACE_DOWN));
+            }
         }
     }
 
     private void RemoveCoin()
     {
-        EventManager.Instance.Post(new CoinEvent(this, this, CoinEvent.CoinEventTypes.LANDED_FACE_UP));
+        EventManager.Instance.Post(new CoinEvent(this, this, CoinEvent.CoinEventTypes.SETTLED_FACE_UP));
 
         if (CoinDespawnEffect != null)
         {
