@@ -25,9 +25,15 @@ public class MoveCamera : BaseObject
 
     [Header("Rotation")]
     [SerializeField]
-    private float m_RotationSpeedHorizontal = 250.0f;
+    private float m_RotationMaxSpeedHorizontal = 250.0f;
     [SerializeField]
-    private float m_RotationSpeedVertical = 120.0f;
+    private float m_RotationMaxSpeedVertical = 120.0f;
+    [SerializeField]
+    private float m_RotationAccelHorizontal = 50f;
+    [SerializeField]
+    private float m_RotationAccelVertical = 50f;
+    [SerializeField]
+    private float m_RotationDecay = 0.95f;
     [SerializeField]
     private float m_MinVerticalAngle = -20f;
     [SerializeField]
@@ -75,12 +81,16 @@ public class MoveCamera : BaseObject
 
         mCustomFollowOrbit = (mCameraState == CameraStates.FOLLOWING_SLAM);
         
-        mCurrentRotationVector.x += (mCurrentRotationInputVector.x * m_RotationSpeedHorizontal) * Time.unscaledDeltaTime;
-        mCurrentRotationVector.y -= (mCurrentRotationInputVector.y * m_RotationSpeedVertical) * Time.unscaledDeltaTime;
+        mCurrentRotationVector.x += (mCurrentRotationInputVector.x * m_RotationAccelHorizontal) * Time.unscaledDeltaTime;
+        mCurrentRotationVector.y -= (mCurrentRotationInputVector.y * m_RotationAccelVertical) * Time.unscaledDeltaTime;
 
-        mCurrentRotationVector.y = ClampAngle(mCurrentRotationVector.y, m_MinVerticalAngle, m_MaxVerticalAngle);
+        mCurrentRotationVector.x = Mathf.Clamp(mCurrentRotationVector.x, -m_RotationMaxSpeedHorizontal, m_RotationMaxSpeedHorizontal);
+        mCurrentRotationVector.y = Mathf.Clamp(mCurrentRotationVector.y, -m_RotationMaxSpeedVertical, m_RotationMaxSpeedVertical);
 
-        newRotation = Quaternion.Euler(mCurrentRotationVector.y, mCurrentRotationVector.x, 0f);
+        Vector3 newRotationEuler = m_CameraTransform.rotation.eulerAngles + new Vector3(mCurrentRotationVector.y, mCurrentRotationVector.x, 0f);
+
+        newRotationEuler.x = ClampAngle(newRotationEuler.x, m_MinVerticalAngle, m_MaxVerticalAngle);
+        newRotation = Quaternion.Euler(newRotationEuler);
 
         m_CameraTransform.rotation = newRotation;
 
@@ -96,6 +106,16 @@ public class MoveCamera : BaseObject
         else
         {
             m_CameraTransform.rotation = newRotation;
+        }
+
+        if (mCurrentRotationVector != Vector2.zero)
+        {
+            mCurrentRotationVector *= m_RotationDecay;
+
+            if (mCurrentRotationVector.magnitude <= kStopThreshold)
+            {
+                mCurrentRotationVector = Vector2.zero;
+            }
         }
     }
 

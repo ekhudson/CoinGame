@@ -8,6 +8,10 @@ public class PogManager : Singleton<PogManager>
     private Transform mSpawnPosition;
     private int mCurrentActiveCount = 0;
 
+    [Header("Gameplay Options")]
+    [SerializeField]
+    private bool m_ReStackEachTurn = false;
+
     [Header("Stack Spawn Settings")]
     [SerializeField] private GameObject m_CoinPrefab;
     [SerializeField] private int m_MinCoinAmount = 10;
@@ -27,6 +31,14 @@ public class PogManager : Singleton<PogManager>
     private float mCurrentTotalHeight = 0f;
     private Vector3 mLastHitPoint = Vector3.zero;
     private Vector3 mLastSpawnPoint = Vector3.zero;
+
+    public int RemainingPogsCount
+    {
+        get
+        {
+            return mPogsInPlay.Count;
+        }
+    }
 
     private void Start()
     {

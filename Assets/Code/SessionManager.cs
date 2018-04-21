@@ -94,20 +94,28 @@ public class SessionManager : Singleton<SessionManager>
         mCurrentState = newState;
 
         EventManager.Instance.Post(new SessionStateChangedEvent(this, mCurrentState, previousState));
+
+        //HACK
+        if (mCurrentState == SessionStates.Starting)
+        {
+            SetState(SessionStates.InProgress);
+        }
+        else if (mCurrentState == SessionStates.Ending)
+        {
+            SetState(SessionStates.OutOfSession);
+        }
     }
 
     private void StartSession()
     {
         mCurrentPlayerIndex = Random.Range(0, PlayerManager.Instance.GetPlayerCount());
         StartCurrentTurn();
-        SetState(SessionStates.InProgress);
     }
 
     private void DoEndSession()
     {
         //Do whatever is needed to close out the session
         mCurrentTurn.SetState(SessionTurn.TurnStates.NotStarted);
-        SetState(SessionStates.OutOfSession);
     }
 
     public void EndSession()

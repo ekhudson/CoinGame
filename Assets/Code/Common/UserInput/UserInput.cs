@@ -6,6 +6,10 @@ using Sirenix.OdinInspector;
 public class UserInput : Singleton<UserInput>
 {
     [SerializeField]
+    private CursorLockMode m_LockMode = CursorLockMode.None;
+    [SerializeField]
+    private float m_MouseInputScalar = 100f;
+    [SerializeField]
     private float m_MouseSensitivityVertical = 1f;
     [SerializeField]
     private float m_MouseSensitivityHorizontal = 1f;
@@ -30,6 +34,7 @@ public class UserInput : Singleton<UserInput>
 	private Dictionary<int, List<KeyBinding>> mKeyDownDict = new Dictionary<int, List<KeyBinding>>();
 	
 	private List<int> mConnectControllerIndexes = new List<int>();
+    private Vector2 mPreviousMousePosition = Vector2.zero;
 
     public bool IsGamePadActive(int gamepadID)
     {
@@ -55,7 +60,9 @@ public class UserInput : Singleton<UserInput>
 		for(int i = 0; i < 4; i++)
 		{
 			mKeyDownDict.Add(i, new List<KeyBinding>());
-		}
+		}        
+
+        mPreviousMousePosition = Input.mousePosition;
     }
 
 	private void GetConnectedControllers()
@@ -181,6 +188,13 @@ public class UserInput : Singleton<UserInput>
         {
             EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.KEYHELD, binding, 0, Vector3.zero, this));
         }
+
+        Cursor.lockState = m_LockMode;
+
+        Vector2 mousePosition = Input.mousePosition;
+        Vector2 delta = mousePosition - mPreviousMousePosition;
+        EvaluateMouseAxesInput(delta);
+        mPreviousMousePosition = mousePosition;
     }
 
     private void OnGUI()
@@ -189,7 +203,7 @@ public class UserInput : Singleton<UserInput>
 
         if (e.type == EventType.Layout || e.type == EventType.Repaint)
         {
-            //return;
+            return;
         }
 
         if (e.isKey && e.keyCode != KeyCode.None)
@@ -208,8 +222,6 @@ public class UserInput : Singleton<UserInput>
         {
             ProcessMouseButtonInput(e.button, e.type);
         }
-
-        EvaluateMouseAxesInput(e.delta);
 
 		GatherGamePadInput();
 		GatherJoystickInput();
@@ -257,6 +269,11 @@ public class UserInput : Singleton<UserInput>
 
     private void EvaluateMouseAxesInput(Vector2 mouseDelta)
     {
+        Vector2 rawDelta = mouseDelta;
+        rawDelta.x /= m_MouseInputScalar;
+        rawDelta.y /= m_MouseInputScalar;
+        rawDelta.x *= m_MouseSensitivityHorizontal;
+        rawDelta.y *= m_MouseSensitivityVertical;
         float x = 0f;
         float y = 0f;
 
