@@ -137,8 +137,16 @@ public class MoveCamera : BaseObject
 
         if (evt.KeyBind.BindingName == "JoystickRight")
         {
-            mCurrentRotationInputVector.x = evt.JoystickInfo.AmountX;
-            mCurrentRotationInputVector.y = evt.JoystickInfo.AmountY;
+            if (evt.Type == UserInputEvent.TYPE.GAMEPAD_JOYSTICK)
+            {
+                mCurrentRotationInputVector.x = evt.JoystickInfo.AmountX;
+                mCurrentRotationInputVector.y = evt.JoystickInfo.AmountY;
+            }
+            else if (evt.Type == UserInputEvent.TYPE.MOUSE_MOVE)
+            {
+                mCurrentRotationInputVector.x = Mathf.Clamp(evt.MouseDelta.AmountX, -1f, 1f);
+                mCurrentRotationInputVector.y = Mathf.Clamp(evt.MouseDelta.AmountY, -1f, 1f);
+            }
         }
 
         if (evt.KeyBind.BindingName == "Forward")

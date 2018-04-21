@@ -137,6 +137,18 @@ public class UserInput : Singleton<UserInput>
                 }
             }
 
+            if (binding.MouseAxis != KeyBinding.MouseAxes.None)
+            {
+                if (!mMouseAxesBindingsDictionary.ContainsKey(binding.MouseAxis))
+                {
+                    mMouseAxesBindingsDictionary.Add(binding.MouseAxis, new List<KeyBinding>() { binding });
+                }
+                else
+                {
+                    mMouseAxesBindingsDictionary[binding.MouseAxis].Add(binding);
+                }
+            }
+
 			if (binding.ControllerButtons != KeyBinding.GamePadButtonValues.None)
 			{
 				if (!mGamepPadButtonBindings.ContainsKey(binding.ControllerButtons))
@@ -175,6 +187,11 @@ public class UserInput : Singleton<UserInput>
     {
         Event e = Event.current;
 
+        if (e.type == EventType.Layout || e.type == EventType.Repaint)
+        {
+            //return;
+        }
+
         if (e.isKey && e.keyCode != KeyCode.None)
         {
             if(e.type == EventType.KeyDown)
@@ -191,10 +208,8 @@ public class UserInput : Singleton<UserInput>
         {
             ProcessMouseButtonInput(e.button, e.type);
         }
-        else if (e.isMouse && e.type == EventType.MouseMove)
-        {
-            EvaluateMouseAxesInput(e.delta);
-        }
+
+        EvaluateMouseAxesInput(e.delta);
 
 		GatherGamePadInput();
 		GatherJoystickInput();
@@ -271,6 +286,7 @@ public class UserInput : Singleton<UserInput>
                     {
                         binding.IsDown = false;
                         mKeysDown.Remove(binding);
+                        EventManager.Instance.Post(new UserInputEvent(UserInputEvent.TYPE.MOUSE_MOVE, binding, new UserInputEvent.MouseDeltaInfoClass(0f, 0f), 0, Vector3.zero, this));
                     }
                 }
             }
