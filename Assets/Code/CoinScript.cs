@@ -22,6 +22,7 @@ public class CoinScript : BaseObject
     private CoinStates mCoinState = CoinStates.IDLE;
     private Rigidbody mRigidbody;
     private float mCurrentFacingDot = 0f;
+    private bool mAsleepLastFrame = false;
 
     private void Start()
     {

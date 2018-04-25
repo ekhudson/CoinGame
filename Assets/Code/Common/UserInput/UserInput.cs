@@ -195,6 +195,9 @@ public class UserInput : Singleton<UserInput>
         Vector2 delta = mousePosition - mPreviousMousePosition;
         EvaluateMouseAxesInput(delta);
         mPreviousMousePosition = mousePosition;
+
+        GatherGamePadInput();
+        GatherJoystickInput();
     }
 
     private void OnGUI()
@@ -223,8 +226,8 @@ public class UserInput : Singleton<UserInput>
             ProcessMouseButtonInput(e.button, e.type);
         }
 
-		GatherGamePadInput();
-		GatherJoystickInput();
+		//GatherGamePadInput();
+		//GatherJoystickInput();
     }
 
     private void ProcessKeycode(KeyCode code, UserInputEvent.TYPE inputType)
@@ -401,7 +404,8 @@ public class UserInput : Singleton<UserInput>
 		ProcessGamePadButton(KeyBinding.GamePadButtonValues.DPadDown, state.DPad.Down, playerIndex);
 		ProcessGamePadButton(KeyBinding.GamePadButtonValues.DPadLeft, state.DPad.Left, playerIndex);
 		ProcessGamePadButton(KeyBinding.GamePadButtonValues.DPadRight, state.DPad.Right, playerIndex);
-	}
+        ProcessGamePadButton(KeyBinding.GamePadButtonValues.Start, state.Buttons.Start, playerIndex);
+    }
 
 	private void ProcessGamePadButton(KeyBinding.GamePadButtonValues button, ButtonState buttonState, PlayerIndex playerIndex)
 	{

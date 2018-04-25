@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using XInputDotNetPure;
+using Sirenix.OdinInspector;
 
 public class MoveCamera : BaseObject
 {
@@ -41,6 +41,7 @@ public class MoveCamera : BaseObject
 
     private bool m_MoveEnabled = true;
     private bool m_RotationEnabled = true;
+    [ReadOnly]
     private CameraStates mCameraState;
     private Transform mCurrentTarget;
     private bool mCustomFollowOrbit = false;
@@ -62,6 +63,12 @@ public class MoveCamera : BaseObject
     private void Start()
     {
         EventManager.Instance.AddHandler<UserInputEvent>(InputHandler);
+        EventManager.Instance.AddHandler<TurnStateChangedEvent>(OnTurnStateChangedHandler);
+    }
+
+    private void OnDestroy()
+    {
+        
     }
 
     public void Update()
@@ -89,7 +96,7 @@ public class MoveCamera : BaseObject
 
         Vector3 newRotationEuler = m_CameraTransform.rotation.eulerAngles + new Vector3(mCurrentRotationVector.y, mCurrentRotationVector.x, 0f);
 
-        newRotationEuler.x = ClampAngle(newRotationEuler.x, m_MinVerticalAngle, m_MaxVerticalAngle);
+        //newRotationEuler.x = ClampAngle(newRotationEuler.x, m_MinVerticalAngle, m_MaxVerticalAngle);
         newRotation = Quaternion.Euler(newRotationEuler);
 
         m_CameraTransform.rotation = newRotation;
@@ -98,10 +105,12 @@ public class MoveCamera : BaseObject
         {
             if (mCustomFollowOrbit)
             {
-                return;
-            }
 
-            m_CameraTransform.rotation = Quaternion.RotateTowards(BaseTransform.rotation, Quaternion.LookRotation((mCurrentTarget.position - m_CameraTransform.position).normalized), 2f);
+            }
+            else
+            {
+                m_CameraTransform.rotation = Quaternion.RotateTowards(BaseTransform.rotation, Quaternion.LookRotation((mCurrentTarget.position - m_CameraTransform.position).normalized), 2f);
+            }
         }
         else
         {
@@ -151,8 +160,8 @@ public class MoveCamera : BaseObject
             float xAmount = evt.JoystickInfo.AmountX;
             float yAmount = evt.JoystickInfo.AmountY;
 
-            moveValue.z += (yAmount * m_MoveAccelHorizontal) * Time.deltaTime;
-            moveValue.x += (xAmount * m_MoveAccelHorizontal) * Time.deltaTime;
+            moveValue.z += (yAmount * m_MoveAccelHorizontal) * Time.unscaledDeltaTime;
+            moveValue.x += (xAmount * m_MoveAccelHorizontal) * Time.unscaledDeltaTime;
         }
 
         if (evt.KeyBind.BindingName == "JoystickRight")
@@ -171,37 +180,52 @@ public class MoveCamera : BaseObject
 
         if (evt.KeyBind.BindingName == "Forward")
         {
-            moveValue.z += (m_MoveAccelHorizontal) * Time.deltaTime;
+            moveValue.z += (m_MoveAccelHorizontal) * Time.unscaledDeltaTime;
         }
         
         if (evt.KeyBind.BindingName == "Back")
         {
-            moveValue.z += (-m_MoveAccelHorizontal) * Time.deltaTime;
+            moveValue.z += (-m_MoveAccelHorizontal) * Time.unscaledDeltaTime;
         }
 
         if (evt.KeyBind.BindingName == "Left")
         {
-            moveValue.x += (-m_MoveAccelHorizontal) * Time.deltaTime;
+            moveValue.x += (-m_MoveAccelHorizontal) * Time.unscaledDeltaTime;
         }        
 
         if (evt.KeyBind.BindingName == "Right")
         {
-            moveValue.x += (m_MoveAccelHorizontal) * Time.deltaTime;
+            moveValue.x += (m_MoveAccelHorizontal) * Time.unscaledDeltaTime;
         }
 
         if (evt.KeyBind.BindingName == "Raise")
         {
-            moveValue.y += (m_MoveAccelVertical) * Time.deltaTime;
+            moveValue.y += (m_MoveAccelVertical) * Time.unscaledDeltaTime;
         }
 
         if (evt.KeyBind.BindingName == "Lower")
         {
-            moveValue.y += (-m_MoveAccelVertical) * Time.deltaTime;
+            moveValue.y += (-m_MoveAccelVertical) * Time.unscaledDeltaTime;
         }
 
         if (moveValue != Vector3.zero)
         {
             mCurrentMoveVector = Vector3.Min(mCurrentMoveVector + moveValue, new Vector3(m_MaxMoveSpeedHorizontal, m_MaxMoveSpeedVertical, m_MaxMoveSpeedHorizontal));
+        }
+    }
+
+    private void OnTurnStateChangedHandler(object sender, TurnStateChangedEvent evt)
+    {
+        if (evt.NewState == SessionTurn.TurnStates.Launched)
+        {
+            if (PogManager.Instance.LastThrownSlammer != null)
+            {
+                FollowSlammer(PogManager.Instance.LastThrownSlammer.transform);
+            }
+        }
+        else if (evt.NewState == SessionTurn.TurnStates.TurnEnded)
+        {
+            SetToIdle();
         }
     }
 

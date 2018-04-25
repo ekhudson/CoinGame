@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Sirenix.OdinInspector;
 
 public class PogManager : Singleton<PogManager>
 {
-    private Dictionary<int, List<CoinScript>> mPlayerToPogDictionary = new Dictionary<int, List<CoinScript>>();
-    private List<CoinScript> mPogsInPlay = new List<CoinScript>();
-    private Transform mSpawnPosition;
-    private int mCurrentActiveCount = 0;
 
     [Header("Gameplay Options")]
     [SerializeField]
     private bool m_ReStackEachTurn = false;
+    [SerializeField]
+    private bool m_RemoveThrownSlammers = false;
 
     [Header("Stack Spawn Settings")]
     [SerializeField] private GameObject m_CoinPrefab;
@@ -22,6 +21,14 @@ public class PogManager : Singleton<PogManager>
     [SerializeField] private float m_MaxOffset = 0.5f;
     [SerializeField] private float m_MaxRotation = 90f;
 
+    private Dictionary<int, List<CoinScript>> mPlayerToPogDictionary = new Dictionary<int, List<CoinScript>>();
+    [SerializeField]
+    [ReadOnly]
+    private List<CoinScript> mPogsInPlay = new List<CoinScript>();
+    private Transform mSpawnPosition;
+    [SerializeField]
+    [ReadOnly]
+    private int mCurrentActiveCount = 0;
     private int mCurrentSpawnCount = 0;
     private int mSpawnAmount = 0;
     private float mStartDelay = 0f;
@@ -31,6 +38,20 @@ public class PogManager : Singleton<PogManager>
     private float mCurrentTotalHeight = 0f;
     private Vector3 mLastHitPoint = Vector3.zero;
     private Vector3 mLastSpawnPoint = Vector3.zero;
+    private PlayerCoinScript mLastThrownSlammer = null;
+    private bool mIsSpawning = false;
+
+    public PlayerCoinScript LastThrownSlammer
+    {
+        get
+        {
+            return mLastThrownSlammer;
+        }
+        set
+        {
+            mLastThrownSlammer = value;
+        }
+    }
 
     public int RemainingPogsCount
     {
@@ -58,6 +79,7 @@ public class PogManager : Singleton<PogManager>
 
         mStartDelay = Random.Range(m_StartDelayMin, m_StartDelayMax);
         mSpawnAmount = Random.Range(m_MinCoinAmount, m_MaxCoinAmount);
+        mIsSpawning = true;
     }
 
     public void SetSpawnPosition(Transform spawnPosition)
@@ -69,6 +91,11 @@ public class PogManager : Singleton<PogManager>
     {
         if (mCurrentActiveCount == 0)
         {
+            if ( (m_RemoveThrownSlammers) && (mLastThrownSlammer != null))
+            {
+                Destroy(mLastThrownSlammer.gameObject);
+            }
+
             SessionManager.Instance.EndCurrentTurn();
         }
     }
@@ -119,8 +146,11 @@ public class PogManager : Singleton<PogManager>
             return;
         }
 
-        SpawnPog();
-        mCurrentSpawnDelay = 0f;
+        if (mIsSpawning)
+        {
+            SpawnPog();
+            mCurrentSpawnDelay = 0f;
+        }
 	}
 
     private void OnDrawGizmos()
@@ -172,7 +202,7 @@ public class PogManager : Singleton<PogManager>
 
         if (mCurrentSpawnCount >= mSpawnAmount)
         {
-            enabled = false;
+            mIsSpawning = false;
         }
     }
 }

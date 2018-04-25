@@ -32,6 +32,18 @@ public class SessionManager : Singleton<SessionManager>
         }
     }
 
+    public SessionTurn.TurnStates CurrentTurnState
+    {
+        get
+        {
+            return mCurrentTurn.CurrentState;
+        }
+        set
+        {
+            mCurrentTurn.SetState(value);
+        }
+    }
+
     private void Start()
     {
         EventManager.Instance.AddHandler<GameStateChangeEvent>(OnGameStateChangedEvent);

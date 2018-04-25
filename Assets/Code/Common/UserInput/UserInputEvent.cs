@@ -7,14 +7,14 @@ public class UserInputEvent : EventBase
 {
     public enum TYPE
     {
-        KEYDOWN,
-        KEYHELD,
-        KEYUP,
-		GAMEPAD_BUTTON_DOWN,
-		GAMEPAD_BUTTON_HELD,
-		GAMEPAD_BUTTON_UP,
-		GAMEPAD_JOYSTICK,
-        MOUSE_MOVE,
+        KEYDOWN = 1,
+        KEYHELD = 2,
+        KEYUP = 4,
+		GAMEPAD_BUTTON_DOWN = 8,
+		GAMEPAD_BUTTON_HELD = 16,
+		GAMEPAD_BUTTON_UP = 32,
+		GAMEPAD_JOYSTICK = 64,
+        MOUSE_MOVE = 128,
     }
     
     public readonly TYPE Type;

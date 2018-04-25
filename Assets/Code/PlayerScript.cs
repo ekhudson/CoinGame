@@ -11,7 +11,6 @@ public class PlayerScript : MonoBehaviour
         THROWN,
     }
 
-
     public GameObject PlayerCoinPrefab;
     public BoxCollider CoinBounds;
     public LayerMask CoinLayerMask;
@@ -36,6 +35,7 @@ public class PlayerScript : MonoBehaviour
     private Ray mRay;
     private RaycastHit mHit;
     private bool mThrowKeyDown = false;
+    private bool mAcceptKeyDown = false;
     private bool mSlowMoKeyDown = false;
     private PlayerStates mPlayerState = PlayerStates.IDLE;
 
@@ -66,7 +66,15 @@ public class PlayerScript : MonoBehaviour
 
     private GUIStyle mReticuleStyle;
 
-    private const float kReticuleWidth = 16f;
+    private const float kReticuleWidth = 16f;    
+
+    public GameObject LastFiredCoin
+    {
+        get
+        {
+            return mLastFiredCoin;
+        }
+    }
 
     private void Start()
     {
@@ -148,11 +156,12 @@ public class PlayerScript : MonoBehaviour
 
         if (mNeedReload)
         {
-            if (mThrowKeyDown && mPlayerState == PlayerStates.THROWN && !mGamePaused)
+            if (mAcceptKeyDown && mPlayerState == PlayerStates.THROWN && !mGamePaused)
             {
                 mPlayerState = PlayerStates.IDLE;
                 mNeedReload = false;
-                Reload();
+                SessionManager.Instance.EndCurrentTurn();
+                Reload();                
             }
         } 
         else
@@ -231,6 +240,7 @@ public class PlayerScript : MonoBehaviour
                     mPlayerState = PlayerStates.THROWN;
                     SpawnCoin();
                     mNeedReload = true;
+                    SessionManager.Instance.CurrentTurnState = SessionTurn.TurnStates.Launched;
                 }
             }
         }
@@ -246,7 +256,12 @@ public class PlayerScript : MonoBehaviour
         if (evt.KeyBind.BindingName == "AltTrigger")
         {
             mSlowMoKeyDown = evt.KeyBind.IsDown;
-        }        
+        }
+
+        if (evt.KeyBind.BindingName == "Accept")
+        {
+            mAcceptKeyDown = evt.KeyBind.IsDown;
+        }
     }
 
     private void OnGUI()
@@ -424,26 +439,18 @@ public class PlayerScript : MonoBehaviour
 
         PlayerCoinScript playerCoinScript = playerCoin.GetComponent<PlayerCoinScript>();
 
+        PogManager.Instance.LastThrownSlammer = playerCoinScript; //TODO: This functionality is duped by mLastFiredCoin above
+
         playerCoinScript.LaunchCoin();        
 
-        if (FollowCoins)
-        {
-             mMoveCameraScript.FollowSlammer(playerCoin.transform);
+        //if (FollowCoins)
+        //{
+        //     //mMoveCameraScript.FollowSlammer(playerCoin.transform);
 
-            //if (CoinUserInterfaceManager.Instance.DoSlowMo)
-            //{
-            //    Time.timeScale = 0.45f;
-            //}
-        }
+        //    //if (CoinUserInterfaceManager.Instance.DoSlowMo)
+        //    //{
+        //    //    Time.timeScale = 0.45f;
+        //    //}
+        //}
     }
-
-    //public void PlayerCoinImpactEventHandler(object sender, PlayerCoinImpactEvent impactEvent)
-    //{
-    //    if (FollowCoins && mOrbitScript.SecondaryFollowPoint == null && impactEvent.PlayerCoin.FreshCoin)
-    //    {
-    //        //impactEvent.PlayerCoin.FreshCoin = false;
-    //        //mOrbitScript.SetSecondaryFollowPoint(impactEvent.CollisionData.transform);
-    //        mOrbitScript.NewSecondFollowPoint(impactEvent.CollisionData.contacts[0].point);
-    //    }
-    //}
 }

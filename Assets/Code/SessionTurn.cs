@@ -51,7 +51,7 @@ public class SessionTurn
             break;
 
             case TurnStates.TurnEnding:
-
+                
                 DoTurnEnd();
 
             break;
@@ -74,6 +74,6 @@ public class SessionTurn
 
     private void DoTurnEnd()
     {
-        SetState(TurnStates.TurnEnded);
+         SetState(TurnStates.TurnEnded);
     }
 }
