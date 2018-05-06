@@ -1,19 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class SessionManager : Singleton<SessionManager>
 {
     public enum SessionStates
     {
-        Starting,
         InProgress,
-        Ending,
         OutOfSession,
     }
 
     private int mCurrentPlayerIndex = 0;
-    
+
+    [SerializeField]
+    [ReadOnly]
     private SessionStates mCurrentState = SessionStates.OutOfSession;
+    [SerializeField]
+    [ReadOnly]
     private SessionTurn mCurrentTurn = new SessionTurn();
 
     public int CurrentPlayerIndex
@@ -58,17 +60,11 @@ public class SessionManager : Singleton<SessionManager>
     {
         if (gameStateChangedEvent.NewState == GameManager.GameStates.InGame)
         {
-            if (mCurrentState == SessionStates.OutOfSession)
-            {
-                SetState(SessionStates.Starting);
-            }
+            SetState(SessionStates.InProgress);
         }
         else if (gameStateChangedEvent.NewState == GameManager.GameStates.PostGame)
         {
-            if (mCurrentState == SessionStates.InProgress)
-            {
-                SetState(SessionStates.Ending);
-            }
+            SetState(SessionStates.OutOfSession);
         }
     }
 
@@ -85,37 +81,15 @@ public class SessionManager : Singleton<SessionManager>
 
             break;
 
-            case SessionStates.Starting:
-
-                StartSession();
-
-            break;
-
             case SessionStates.InProgress:
 
-            break;
-
-            case SessionStates.Ending:
-
-                DoEndSession();
-
-            break;
+            break;                
         }
 
         SessionStates previousState = mCurrentState;
         mCurrentState = newState;
 
         EventManager.Instance.Post(new SessionStateChangedEvent(this, mCurrentState, previousState));
-
-        //HACK
-        if (mCurrentState == SessionStates.Starting)
-        {
-            SetState(SessionStates.InProgress);
-        }
-        else if (mCurrentState == SessionStates.Ending)
-        {
-            SetState(SessionStates.OutOfSession);
-        }
     }
 
     private void StartSession()
@@ -132,17 +106,17 @@ public class SessionManager : Singleton<SessionManager>
 
     public void EndSession()
     {
-        SetState(SessionStates.Ending);
+
     }
 
     public void StartCurrentTurn()
     {
-        mCurrentTurn.SetState(SessionTurn.TurnStates.TurnStarting);
+        mCurrentTurn.SetState(SessionTurn.TurnStates.Aiming);
     }
 
     public void EndCurrentTurn()
     {
-        mCurrentTurn.SetState(SessionTurn.TurnStates.TurnEnding);
+        mCurrentTurn.SetState(SessionTurn.TurnStates.TurnEnded);
         IterateCurrentPlayer();
         StartCurrentTurn();
     }

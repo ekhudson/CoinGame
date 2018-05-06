@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 
 public class PogManager : Singleton<PogManager>
 {
+    [SerializeField]
+    private bool m_DebugMode = false;
 
     [Header("Gameplay Options")]
     [SerializeField]
@@ -25,10 +28,8 @@ public class PogManager : Singleton<PogManager>
     [SerializeField]
     [ReadOnly]
     private List<CoinScript> mPogsInPlay = new List<CoinScript>();
+    private List<CoinScript> mActivePogs = new List<CoinScript>();
     private Transform mSpawnPosition;
-    [SerializeField]
-    [ReadOnly]
-    private int mCurrentActiveCount = 0;
     private int mCurrentSpawnCount = 0;
     private int mSpawnAmount = 0;
     private float mStartDelay = 0f;
@@ -40,6 +41,9 @@ public class PogManager : Singleton<PogManager>
     private Vector3 mLastSpawnPoint = Vector3.zero;
     private PlayerCoinScript mLastThrownSlammer = null;
     private bool mIsSpawning = false;
+    private float mPostLaunchTime = 0f;
+
+    private const float kPostLaunchTurnEndDelay = 0.25f;
 
     public PlayerCoinScript LastThrownSlammer
     {
@@ -79,7 +83,7 @@ public class PogManager : Singleton<PogManager>
 
         mStartDelay = Random.Range(m_StartDelayMin, m_StartDelayMax);
         mSpawnAmount = Random.Range(m_MinCoinAmount, m_MaxCoinAmount);
-        mIsSpawning = true;
+        StartCoroutine(DoStartDelay(mStartDelay));
     }
 
     public void SetSpawnPosition(Transform spawnPosition)
@@ -89,7 +93,9 @@ public class PogManager : Singleton<PogManager>
 
     private void CheckIfTurnEnded()
     {
-        if (mCurrentActiveCount == 0)
+        if (SessionManager.Instance.CurrentTurnState == SessionTurn.TurnStates.Launched && 
+            mActivePogs.Count == 0 &&
+            !mLastThrownSlammer.BaseRigidbody.IsSleeping())
         {
             if ( (m_RemoveThrownSlammers) && (mLastThrownSlammer != null))
             {
@@ -97,6 +103,7 @@ public class PogManager : Singleton<PogManager>
             }
 
             SessionManager.Instance.EndCurrentTurn();
+            mPostLaunchTime = 0f;
         }
     }
 
@@ -112,46 +119,60 @@ public class PogManager : Singleton<PogManager>
     {
         if (coinEvent.CoinEventType == CoinEvent.CoinEventTypes.IMPACTED)
         {
-            mCurrentActiveCount++;
+           // mCurrentActiveCount++;
         }
         else if (coinEvent.CoinEventType == CoinEvent.CoinEventTypes.SETTLED_FACE_DOWN)
         {
-            mCurrentActiveCount--;
-            CheckIfTurnEnded();
+            //mCurrentActiveCount--;
+            if (mPostLaunchTime > kPostLaunchTurnEndDelay)
+            {
+                CheckIfTurnEnded();
+            }
         }
         else if (coinEvent.CoinEventType == CoinEvent.CoinEventTypes.SETTLED_FACE_UP)
         {
             mPogsInPlay.Remove(coinEvent.Coin);
-            mCurrentActiveCount--;
+            //mCurrentActiveCount--;
             CheckIfRoundEnded();
         }
     }
 
     private void Update () 
     {
-        if ((mSpawnPosition == null) || (SessionManager.Instance.CurrentSessionState != SessionManager.SessionStates.InProgress))
+        if (SessionManager.Instance.CurrentTurnState == SessionTurn.TurnStates.Launched)
         {
-            return;
-        }
+            foreach(CoinScript pog in mPogsInPlay)
+            {
+                if ( (!pog.CoinRigidbody.IsSleeping()) && (!mActivePogs.Contains(pog)) )
+                {
+                    mActivePogs.Add(pog);
+                }
+                else if ( (pog.CoinRigidbody.IsSleeping()) && (mActivePogs.Contains(pog)))
+                {
+                    mActivePogs.Remove(pog);
+                }
+            }
 
-	    if (mCurrentStartDelay < mStartDelay)
-        {
-            mCurrentStartDelay += Time.deltaTime;
-            return;
+            mPostLaunchTime += Time.deltaTime;
         }
-
-        if (mCurrentSpawnDelay < m_SpawnDelay)
+        else
         {
-            mCurrentSpawnDelay += Time.deltaTime;
-            return;
-        }
-
-        if (mIsSpawning)
-        {
-            SpawnPog();
-            mCurrentSpawnDelay = 0f;
+            mPostLaunchTime = 0f;
         }
 	}
+
+    private void OnGUI()
+    {
+        if (m_DebugMode)
+        {
+            GUILayout.BeginVertical();
+
+            GUILayout.Label("Pog in play: " + mPogsInPlay.Count.ToString());
+            GUILayout.Label("Active Pogs: " + mActivePogs.Count.ToString());
+
+            GUILayout.EndVertical();
+        }
+    }
 
     private void OnDrawGizmos()
     {
@@ -196,13 +217,28 @@ public class PogManager : Singleton<PogManager>
         {
             newCoin.transform.parent = transform;
             mPogsInPlay.Add(newCoin);
-        }        
+        }
+    }
 
-        mCurrentSpawnCount++;
-
-        if (mCurrentSpawnCount >= mSpawnAmount)
+    IEnumerator DoStartDelay(float delay)
+    {
+        if ((mSpawnPosition == null) || (SessionManager.Instance.CurrentSessionState != SessionManager.SessionStates.InProgress))
         {
-            mIsSpawning = false;
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(delay);
+        mCurrentSpawnCount = 0;
+        StartCoroutine(DoSpawning(m_SpawnDelay));
+    }
+
+    IEnumerator DoSpawning(float spawnDelay)
+    {
+        while (mCurrentSpawnCount < mSpawnAmount)
+        {
+            SpawnPog();
+            mCurrentSpawnCount++;
+            yield return new WaitForSeconds(spawnDelay);
         }
     }
 }

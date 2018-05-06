@@ -413,7 +413,8 @@ public class PlayerScript : MonoBehaviour
         mPreviewRenderer.enabled = false;
 
         GameObject playerCoin = (GameObject)GameObject.Instantiate(PlayerCoinPrefab, pos, rot);
-        playerCoin.GetComponent<Rigidbody>().maxAngularVelocity = MaxAngularVelocity;
+        Rigidbody coinRB = playerCoin.GetComponent<Rigidbody>();
+        coinRB.maxAngularVelocity = MaxAngularVelocity;
 
         
 
@@ -433,7 +434,8 @@ public class PlayerScript : MonoBehaviour
 
         mLastFiredCoin = playerCoin;
 
-        playerCoin.GetComponent<Rigidbody>().AddForceAtPosition(force, playerCoin.transform.position + centerOffset - (mCamera.transform.forward * 0.25f), ForceMode.VelocityChange);
+        coinRB.WakeUp();
+        coinRB.AddForceAtPosition(force, playerCoin.transform.position + centerOffset - (mCamera.transform.forward * 0.25f), ForceMode.VelocityChange);
 
         playerCoin.name = "Launched Coin";
 

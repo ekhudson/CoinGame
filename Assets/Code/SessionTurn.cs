@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Sirenix.OdinInspector;
 
 [System.Serializable]
 public class SessionTurn
@@ -6,13 +7,13 @@ public class SessionTurn
     public enum TurnStates
     {
         NotStarted,
-        TurnStarting,
         Aiming,
         Launched,
-        TurnEnding,
         TurnEnded,
     }
 
+    [SerializeField]
+    [ReadOnly]
     private TurnStates mCurrentState = TurnStates.NotStarted;
 
     public TurnStates CurrentState
@@ -35,26 +36,15 @@ public class SessionTurn
             case TurnStates.NotStarted:
 
             break;
-
-            case TurnStates.TurnStarting:
-
-                DoTurnStart();
-
-            break;
-
+                
             case TurnStates.Aiming:
 
-            break;
+                break;
 
             case TurnStates.Launched:
 
-            break;
+                break;
 
-            case TurnStates.TurnEnding:
-                
-                DoTurnEnd();
-
-            break;
 
             case TurnStates.TurnEnded:
 
@@ -69,11 +59,11 @@ public class SessionTurn
 
     private void DoTurnStart()
     {
-        SetState(TurnStates.Aiming);
+
     }
 
     private void DoTurnEnd()
     {
-         SetState(TurnStates.TurnEnded);
+
     }
 }
